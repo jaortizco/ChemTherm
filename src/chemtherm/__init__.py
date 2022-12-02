@@ -57,7 +57,7 @@ def critical_constants(species):
     # -------------------------------------------------------------------------
     # Load coefficients database
     dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "db_critical_constants.json")
+    database_file = pathlib.Path(dir, "data/db_critical_constants.json")
 
     with open(database_file, "r") as jfile:
         data = json.load(jfile)
@@ -105,7 +105,7 @@ def formation_properties(species):
     # -------------------------------------------------------------------------
     # Load coefficients database
     dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "db_formation_properties.json")
+    database_file = pathlib.Path(dir, "data/db_formation_properties.json")
 
     with open(database_file, "r") as jfile:
         data = json.load(jfile)
@@ -132,7 +132,7 @@ def cp_coeffients(species):
     # -------------------------------------------------------------------------
     # Load coefficients database
     dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "db_cp.json")
+    database_file = pathlib.Path(dir, "data/db_cp.json")
 
     with open(database_file, "r") as jfile:
         data = json.load(jfile)
@@ -435,7 +435,7 @@ def formation_reactions(species):
     # -------------------------------------------------------------------------
     # Load coefficients database
     dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "db_formation_reactions.json")
+    database_file = pathlib.Path(dir, "data/db_formation_reactions.json")
 
     with open(database_file, "r") as jfile:
         data = json.load(jfile)
