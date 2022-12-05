@@ -685,6 +685,48 @@ def gibbs_minimization(T, P, n0, species, elements):
     return n_eq, y_eq
 
 
+def eq_cons(species, nu, T, Tref=298.15):
+    """
+    Compute the change in the heat capacity due to the reaction.
+
+    Parameters
+    ----------
+    species : list
+        List of strings containing the name of each species involved in the
+        reaction. For example, ["H2(g)", "O2(g)", "H2O(g)"].
+    nu : array
+        Stoichiometry coefficients of each especies.
+
+    Returns
+    -------
+    K : float
+        Equilibrium constant.
+
+    """
+    nu = np.asarray(nu)
+    Cp_data = cp_coeffients(species)
+    # species is not really necessary as it loads all data
+    form_props = formation_properties(species)
+
+    Cp_coeff = np.zeros((nu.size, 5))
+    Hf0, S0 = (np.zeros(nu.size) for _ in range(2))
+    for jj in range(nu.size):
+        Cp_coeff[jj, :] = Cp_data[species[jj]]["coeff"]
+        Hf0[jj] = form_props[species[jj]]["Hf0"]
+        S0[jj] = form_props[species[jj]]["S0"]
+
+        Hrxn0 = np.sum(nu*Hf0)
+        Srxn0 = np.sum(nu*S0)
+
+    Hrxn = enthalpy(Hrxn0, nu, Cp_coeff, T, Tref)
+    Srxn = entropy(Srxn0, nu, Cp_coeff, T, Tref)
+    Grxn = Hrxn - T*Srxn
+
+    Kp = np.exp(-Grxn / (R*T))
+
+    return Kp, Hrxn, Grxn, Srxn
+
+
 def main():
     print("ChemTherm package!")
 
