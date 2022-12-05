@@ -669,8 +669,7 @@ def gibbs_minimization(T, P, n0, species, elements):
     n_eq_init = np.copy(n0)
     n_eq_init[n_eq_init == 0] = 1e-12
 
-    opts = {
-        "ftol": 1e-12, "eps": 1e-10, "maxiter": 200}
+    opts = {"ftol": 1e-14, "maxiter": 300}
     sol = optimize.minimize(
         gibbs_objfun, n_eq_init,
         args=(T, P, Grxn, species),
