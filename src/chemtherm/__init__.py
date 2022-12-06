@@ -2,142 +2,18 @@
 Thermodynamics module.
 
 """
-import json
 import logging
-import pathlib
 import re
 
 import numpy as np
 from scipy import integrate, optimize
 
+from chemtherm import database
 
 logger = logging.getLogger(__name__)
 
-
 R = (101325*22.414) / (1000*273.15)  # Ideal gas constant in J mol^-1 K^-1
 F = 96485  # Faraday constant in A s mol^-1
-
-
-def critical_constants(species):
-    """
-    Critical constants.
-
-    Parameters
-    ----------
-    species : list
-        species to get Cp.
-
-    Returns
-    -------
-    crit_cons : list
-        Critical constants.
-        Tc in K, Pc in Pa, and Vc in m^3 mol^-1.
-
-    Notes
-    -----
-    The critical constants are taken from Table 2-141 of Perry's Chemical
-    Engineering Handbook, 8th Edition. At the same time, values in that table
-    were taken from the Design Institute for Physical Properties (DIPPR) of
-    the American Institute of Chemical Engineers (AIChE), copyright 2007
-    AIChE and reproduced with permission of AICHE and of the DIPPR Evaluated
-    Process Design Data Project Steering Committee. Their source should be
-    cited as R. L. Rowley, W. V. Wilding, J. L. Oscarson,
-    Y. Yang, N. A. Zundel, T. E. Daubert, R. P. Danner,
-    DIPPR® Data Compilation of Pure Chemical Properties, Design Institute for
-    Physical Properties, AIChE, New York (2007).
-
-    The number of digits provided for the acentric factor was chosen for
-    uniformity of appearence and formatting; these do not represent the
-    uncertainties of the physical quantities, but are the result of
-    calculations from the standard thermophysical property formulation within
-    a fixed format.
-
-    """
-    check_species(species)
-    # -------------------------------------------------------------------------
-    # Load coefficients database
-    dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "data/db_critical_constants.json")
-
-    with open(database_file, "r") as jfile:
-        data = json.load(jfile)
-    # -------------------------------------------------------------------------
-    crit_cons = np.zeros((len(species), 5))
-    for ii, sp in enumerate(species):
-        sp = sp.replace("(g)", "").replace("(l)", "").replace("(s)", "")
-        crit_cons[ii, :] = np.array([
-            data[sp]["Tc"], data[sp]["Pc"]*1e6, data[sp]["Vc"]*1e3,
-            data[sp]["Zc"], data[sp]["w"]])
-    # -------------------------------------------------------------------------
-    return crit_cons
-
-
-def formation_properties(species):
-    """
-    Load formation properties database.
-
-    Parameters
-    ----------
-    species : list
-        Species to get the formation properties for.
-
-    Returns
-    -------
-    form_props : dict
-        Formation properties at 298.15 K. Hf0 in J mol^-1, Gf0 in J mol^-1,
-        S0 in J mol^-1 K^-1, and H_comb in J mol^-1.
-
-    Notes
-    -----
-    The formation properties are taken from Table 2-179 of Perry's Chemical
-    Engineering Handbook, 8th Edition. At the same time, values in that table
-    were taken from the Design Institute for Physical Properties (DIPPR) of
-    the American Institute of Chemical Engineers (AIChE), copyright 2007
-    AIChE and reproduced with permission of AICHE and of the DIPPR Evaluated
-    Process Design Data Project Steering Committee. Their source should be
-    cited as R. L. Rowley, W. V. Wilding, J. L. Oscarson,
-    Y. Yang, N. A. Zundel, T. E. Daubert, R. P. Danner,
-    DIPPR® Data Compilation of Pure Chemical Properties, Design Institute for
-    Physical Properties, AIChE, New York (2007).
-
-    """
-    check_species(species)
-    # -------------------------------------------------------------------------
-    # Load coefficients database
-    dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "data/db_formation_properties.json")
-
-    with open(database_file, "r") as jfile:
-        data = json.load(jfile)
-    # -------------------------------------------------------------------------
-    return data
-
-
-def cp_coeffients(species):
-    """
-    Load Cp coefficients database.
-
-    Parameters
-    ----------
-    species : list
-        Species to get the Cp data for.
-
-    Returns
-    -------
-    dict
-        Cp data.
-
-    """
-    check_species(species)
-    # -------------------------------------------------------------------------
-    # Load coefficients database
-    dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "data/db_cp.json")
-
-    with open(database_file, "r") as jfile:
-        data = json.load(jfile)
-    # -------------------------------------------------------------------------
-    return data
 
 
 def check_species(species):
@@ -362,10 +238,10 @@ def entropy(S0, nu, Cp_coeff, T, Tref=298.15):
     return S0 + integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
 
 
-def properties(species, frxns, T, Tref=298.15):
+def especies_properties(species, frxns, T, Tref=298.15):
     """
-    Calculate the enthalpy, Gibbs energy and entropy of each species at the
-    specified temperature.
+    Calculate the formation enthalpy, Gibbs energy and entropy of each species
+    at the specified temperature.
 
     species : list
         List of strings containing the name of each species involved in the
@@ -387,64 +263,14 @@ def properties(species, frxns, T, Tref=298.15):
         Entropy of reaction at the given temperature in J mol^-1 K^-1.
 
     """
-    n = len(species)
-
-    Cp_data = cp_coeffients(species)
-    ncoeff = len(Cp_data[species[0]]["coeff"])
-    form_props = formation_properties(species)
-
-    Hrxn, Srxn = (np.zeros(n) for _ in range(2))
-    for ii in range(n):
-        Cp_coeff = np.zeros((len(frxns[ii]["species"]), ncoeff))
+    Hrxn, Grxn, Srxn = (np.zeros(len(species)) for _ in range(3))
+    for ii in range(len(species)):
+        sp = frxns[ii]["species"]
         nu = np.asarray(frxns[ii]["nu"])
 
-        Hf0, S0 = (np.zeros(nu.size) for _ in range(2))
-        for jj in range(nu.size):
-            Cp_coeff[jj, :] = Cp_data[frxns[ii]["species"][jj]]["coeff"]
-            Hf0[jj] = form_props[frxns[ii]["species"][jj]]["Hf0"]
-            S0[jj] = form_props[frxns[ii]["species"][jj]]["S0"]
-
-        Hrxn0 = np.sum(nu*Hf0)
-        Srxn0 = np.sum(nu*S0)
-
-        Hrxn[ii] = enthalpy(Hrxn0, nu, Cp_coeff, T, Tref)
-        Srxn[ii] = entropy(Srxn0, nu, Cp_coeff, T, Tref)
-
-    Grxn = Hrxn - T*Srxn
+        Hrxn[ii], Grxn[ii], Srxn[ii] = reaction_properties(sp, nu, T, Tref)
 
     return Hrxn, Grxn, Srxn
-
-
-def formation_reactions(species):
-    """
-    Get the formation reaction for each species.
-
-    Parameters
-    ----------
-    species : list
-        List of strings containing the name of each species involved in the
-        equilibrium. For example, ["H2(g)", "O2(g)", "H2O(g)"].
-
-    Returns
-    -------
-    frxn : list
-        Formation reactions for each species.
-
-    """
-    check_species(species)
-    # -------------------------------------------------------------------------
-    # Load coefficients database
-    dir = pathlib.Path(__file__).resolve().parent
-    database_file = pathlib.Path(dir, "data/db_formation_reactions.json")
-
-    with open(database_file, "r") as jfile:
-        data = json.load(jfile)
-    # -------------------------------------------------------------------------
-    frxns = []
-    for sp in species:
-        frxns.append(data[sp])
-    # -------------------------------------------------------------------------
-    return frxns
 
 
 def list2dict(lst):
@@ -601,7 +427,9 @@ def gibbs_objfun(n, T, P, Grxn, species):
 
     GRT = Grxn/(R*T)
 
-    crit_cons = critical_constants(species)
+    db = database.Database()
+    crit_cons = db.get_critical_constants(species)
+
     a = activity(T, P, y, crit_cons)
 
     # It it possible for the number of moles of one of the species to become
@@ -648,8 +476,9 @@ def gibbs_minimization(T, P, n0, species, elements):
     scaling_factor = np.sum(n0)
     n0 = n0/scaling_factor
     # -------------------------------------------------------------------------
-    frxns = formation_reactions(species)
-    _, Grxn, _ = properties(species, frxns, T)
+    db = database.Database()
+    frxns = db.get_formation_reactions(species)
+    _, Grxn, _ = especies_properties(species, frxns, T)
     atom_moles_init = atom_balance(n0, species, elements)
     # -------------------------------------------------------------------------
     # Constraints:
@@ -687,7 +516,8 @@ def gibbs_minimization(T, P, n0, species, elements):
 
 def eq_cons(species, nu, T, Tref=298.15):
     """
-    Compute the change in the heat capacity due to the reaction.
+    Compute the enthalpy, the gibbs energy, the entropy, and the equilibrium
+    constant of a given reaction at a specified temperature.
 
     Parameters
     ----------
@@ -696,35 +526,73 @@ def eq_cons(species, nu, T, Tref=298.15):
         reaction. For example, ["H2(g)", "O2(g)", "H2O(g)"].
     nu : array
         Stoichiometry coefficients of each especies.
+    T : float
+        Temperature in K.
+    Tref : float, optional
+        Reference temperature in K.
 
     Returns
     -------
     K : float
         Equilibrium constant.
+    Hrxn : float
+        Enthalpy of reaction at the given temperature in J mol^-1.
+    Grxn : float
+        Gibbs free energy of reaction at the given temperature in J mol^-1.
+    Srxn : float
+        Entropy of reaction at the given temperature in J mol^-1 K^-1.
 
     """
     nu = np.asarray(nu)
-    Cp_data = cp_coeffients(species)
-    # species is not really necessary as it loads all data
-    form_props = formation_properties(species)
 
-    Cp_coeff = np.zeros((nu.size, 5))
-    Hf0, S0 = (np.zeros(nu.size) for _ in range(2))
-    for jj in range(nu.size):
-        Cp_coeff[jj, :] = Cp_data[species[jj]]["coeff"]
-        Hf0[jj] = form_props[species[jj]]["Hf0"]
-        S0[jj] = form_props[species[jj]]["S0"]
-
-        Hrxn0 = np.sum(nu*Hf0)
-        Srxn0 = np.sum(nu*S0)
-
-    Hrxn = enthalpy(Hrxn0, nu, Cp_coeff, T, Tref)
-    Srxn = entropy(Srxn0, nu, Cp_coeff, T, Tref)
-    Grxn = Hrxn - T*Srxn
-
+    Hrxn, Grxn, Srxn = reaction_properties(species, nu, T, Tref=298.15)
     Kp = np.exp(-Grxn / (R*T))
 
     return Kp, Hrxn, Grxn, Srxn
+
+
+def reaction_properties(species, nu, T, Tref=298.15):
+    """
+    Compute the enthalpy, the gibbs energy, and the entropy of a given
+    reaction at a specified temperature.
+
+    Parameters
+    ----------
+    species : list
+        List of strings containing the name of each species involved in the
+        reaction. For example, ["H2(g)", "O2(g)", "H2O(g)"].
+    nu : array
+        Stoichiometry coefficients of each especies.
+    T : float
+        Temperature in K.
+    Tref : float, optional
+        Reference temperature in K.
+
+    Returns
+    -------
+    Hrxn : float
+        Enthalpy of reaction at the given temperature in J mol^-1.
+    Grxn : float
+        Gibbs free energy of reaction at the given temperature in J mol^-1.
+    Srxn : float
+        Entropy of reaction at the given temperature in J mol^-1 K^-1.
+
+    """
+    db = database.Database()
+    cp_coeff = db.get_Cp_coefficients(species)
+    form_props = db.get_formation_properties(species)
+
+    Hf0 = form_props[:, 0]
+    S0 = form_props[:, 2]
+
+    Hrxn0 = np.sum(nu*Hf0)
+    Srxn0 = np.sum(nu*S0)
+
+    Hrxn = enthalpy(Hrxn0, nu, cp_coeff, T, Tref)
+    Srxn = entropy(Srxn0, nu, cp_coeff, T, Tref)
+    Grxn = Hrxn - T*Srxn
+
+    return Hrxn, Grxn, Srxn
 
 
 def main():
