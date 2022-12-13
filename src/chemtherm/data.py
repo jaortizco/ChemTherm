@@ -2,73 +2,34 @@ import json
 import pathlib
 
 import numpy as np
+import numpy.typing as npt
 
 
-class Database:
+class CriticalConstants:
     """
-    Class to handle thermodynamic data.
+    Class to handle critical constants data.
 
     """
-    def __init__(self):
-        self._load_critical_constants()
-        self._load_formation_properties()
-        self._load_heat_capacity_coeffients()
-        self._load_formation_reactions()
-
-    def get_critical_constants(self, species):
+    def get_critical_constants(self, species: str) -> npt.NDArray[np.float64]:
         """
         Get the critial constants for the specified species.
 
         """
-        crit_cons = np.zeros((len(species), 5))
-        for ii, sp in enumerate(species):
-            sp = sp.replace("(g)", "").replace("(l)", "").replace("(s)", "")
-            crit_cons[ii, :] = np.array([
-                self._crit_cons_data[sp]["Tc"],
-                self._crit_cons_data[sp]["Pc"]*1e6,
-                self._crit_cons_data[sp]["Vc"]*1e3,
-                self._crit_cons_data[sp]["Zc"],
-                self._crit_cons_data[sp]["w"]])
+        data = self._load_critical_constants()
+
+        species = species.replace(
+            "(g)", "").replace(
+                "(l)", "").replace(
+                    "(s)", "")
+
+        crit_cons = np.array([
+            data[species]["Tc"],
+            data[species]["Pc"]*1e6,
+            data[species]["Vc"]*1e3,
+            data[species]["Zc"],
+            data[species]["w"]])
 
         return crit_cons
-
-    def get_Cp_coefficients(self, species):
-        """
-        Get the Cp coefficients for the specified species.
-
-        """
-        Cp_coeff = np.zeros(
-            (len(species), len(self._Cp_data[species[0]]["coeff"])))
-        for ii, sp in enumerate(species):
-            Cp_coeff[ii, :] = self._Cp_data[sp]["coeff"]
-
-        return Cp_coeff
-
-    def get_formation_properties(self, species):
-        """
-        Get the formation properties for the specified species.
-
-        """
-        form_props = np.zeros((len(species), 4))
-        for ii, sp in enumerate(species):
-            form_props[ii, :] = np.array([
-                self._form_props_data[sp]["Hf0"],
-                self._form_props_data[sp]["Gf0"],
-                self._form_props_data[sp]["S0"],
-                self._form_props_data[sp]["Hcomb"]])
-
-        return form_props
-
-    def get_formation_reactions(self, species):
-        """
-        Get the formation reactions for the specified species.
-
-        """
-        frxns = []
-        for sp in species:
-            frxns.append(self._formation_rxns_data[sp])
-
-        return frxns
 
     def _load_critical_constants(self):
         """
@@ -110,9 +71,24 @@ class Database:
         db_file = pathlib.Path(dir, "data/db_critical_constants.json")
 
         with open(db_file, "r") as jfile:
-            self._crit_cons_data = json.load(jfile)
+            return json.load(jfile)
 
-    def _load_heat_capacity_coeffients(self):
+
+class CpCoefficients:
+    """
+    Class to handle Cp coefficient data.
+
+    """
+    def get_cp_coefficients(self, species: str) -> npt.NDArray[np.float64]:
+        """
+        Get the Cp coefficients for the specified species.
+
+        """
+        data = self._load_cp_coefficients()
+
+        return np.array(data[species]["coeff"])
+
+    def _load_cp_coefficients(self):
         """
         Load Cp coefficients database.
 
@@ -132,7 +108,29 @@ class Database:
         db_file = pathlib.Path(dir, "data/db_cp.json")
 
         with open(db_file, "r") as jfile:
-            self._Cp_data = json.load(jfile)
+            return json.load(jfile)
+
+
+class FormationProperties:
+    """
+    Class to handle formation properties data.
+
+    """
+    def get_formation_properties(
+            self, species: str) -> npt.NDArray[np.float64]:
+        """
+        Get the formation properties for the specified species.
+
+        """
+        data = self._load_formation_properties()
+
+        form_props = np.array([
+                data[species]["Hf0"],
+                data[species]["Gf0"],
+                data[species]["S0"],
+                data[species]["Hcomb"]])
+
+        return form_props
 
     def _load_formation_properties(self):
         """
@@ -168,22 +166,25 @@ class Database:
         db_file = pathlib.Path(dir, "data/db_formation_properties.json")
 
         with open(db_file, "r") as jfile:
-            self._form_props_data = json.load(jfile)
+            return json.load(jfile)
 
-    def _load_formation_reactions(self):
+
+class FormationReaction:
+    """
+    Class to handle formation reaction data.
+
+    """
+    def get_formation_reaction(self, species: str):
         """
-        Loade formation reaction database.
+        Get the formation reactions for the specified species.
 
-        Parameters
-        ----------
-        species : list
-            List of strings containing the name of each species involved in
-            the equilibrium. For example, ["H2(g)", "O2(g)", "H2O(g)"].
+        """
+        data = self._load_formation_reaction()
+        return data[species]
 
-        Returns
-        -------
-        frxn : list
-            Formation reactions for each species.
+    def _load_formation_reaction(self):
+        """
+        Load formation reaction database.
 
         """
         # Load coefficients database
@@ -191,4 +192,35 @@ class Database:
         db_file = pathlib.Path(dir, "data/db_formation_reactions.json")
 
         with open(db_file, "r") as jfile:
-            self._formation_rxns_data = json.load(jfile)
+            return json.load(jfile)
+
+
+class Elements:
+    """
+    Class to handle elements data.
+
+    """
+    def get_elements(self, species: str) -> dict:
+        """
+        Get the elements that make up the specified species.
+
+        """
+        species = species.replace(
+            "(g)", "").replace(
+                "(l)", "").replace(
+                    "(s)", "")
+
+        data = self._load_elements()
+        return data[species]
+
+    def _load_elements(self):
+        """
+        Load elements database.
+
+        """
+        # Load coefficients database
+        dir = pathlib.Path(__file__).resolve().parent
+        db_file = pathlib.Path(dir, "data/db_elements.json")
+
+        with open(db_file, "r") as jfile:
+            return json.load(jfile)
