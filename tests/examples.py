@@ -1,14 +1,15 @@
 """
-Module with some calculation exampl.
+Module with some calculation examples.
 
 """
 import time
 
 import matplotlib.pyplot as plt
-from chemtherm.mixture import Mixture
 import numpy as np
-from chemtherm.species import Species
+
 from chemtherm import chemeq
+from chemtherm.mixture import Mixture
+from chemtherm.species import Species
 
 
 def example_smith_vanness_abbott():
