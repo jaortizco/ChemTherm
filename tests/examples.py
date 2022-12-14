@@ -158,9 +158,9 @@ def equilibrium_constant():
 def main():
     start_time = time.perf_counter()
 
-    # example_smith_vanness_abbott()
+    example_smith_vanness_abbott()
     # example_web_app()
-    example_plot()
+    # example_plot()
     # equilibrium_constant()
 
     run_time = time.perf_counter() - start_time
