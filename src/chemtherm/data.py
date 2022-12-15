@@ -4,6 +4,8 @@ import pathlib
 import numpy as np
 import numpy.typing as npt
 
+from chemtherm import utils
+
 
 class CriticalConstants:
     """
@@ -18,10 +20,7 @@ class CriticalConstants:
         """
         data = self._load_critical_constants()
 
-        species_name = species_name.replace(
-            "(g)", "").replace(
-                "(l)", "").replace(
-                    "(s)", "")
+        species_name = utils.strip_species_name(species_name)
 
         crit_cons = np.array([
             data[species_name]["Tc"],
@@ -207,10 +206,7 @@ class Elements:
         Get the elements that make up the specified species.
 
         """
-        species_name = species_name.replace(
-            "(g)", "").replace(
-                "(l)", "").replace(
-                    "(s)", "")
+        species_name = utils.strip_species_name(species_name)
 
         data = self._load_elements()
         return data[species_name]
