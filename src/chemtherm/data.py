@@ -10,24 +10,25 @@ class CriticalConstants:
     Class to handle critical constants data.
 
     """
-    def get_critical_constants(self, species: str) -> npt.NDArray[np.float64]:
+    def get_critical_constants(
+            self, species_name: str) -> npt.NDArray[np.float64]:
         """
         Get the critial constants for the specified species.
 
         """
         data = self._load_critical_constants()
 
-        species = species.replace(
+        species_name = species_name.replace(
             "(g)", "").replace(
                 "(l)", "").replace(
                     "(s)", "")
 
         crit_cons = np.array([
-            data[species]["Tc"],
-            data[species]["Pc"]*1e6,
-            data[species]["Vc"]*1e3,
-            data[species]["Zc"],
-            data[species]["w"]])
+            data[species_name]["Tc"],
+            data[species_name]["Pc"]*1e6,
+            data[species_name]["Vc"]*1e3,
+            data[species_name]["Zc"],
+            data[species_name]["w"]])
 
         return crit_cons
 
@@ -79,14 +80,15 @@ class CpCoefficients:
     Class to handle Cp coefficient data.
 
     """
-    def get_cp_coefficients(self, species: str) -> npt.NDArray[np.float64]:
+    def get_cp_coefficients(
+            self, species_name: str) -> npt.NDArray[np.float64]:
         """
         Get the Cp coefficients for the specified species.
 
         """
         data = self._load_cp_coefficients()
 
-        return np.array(data[species]["coeff"])
+        return np.array(data[species_name]["coeff"])
 
     def _load_cp_coefficients(self):
         """
@@ -117,7 +119,7 @@ class FormationProperties:
 
     """
     def get_formation_properties(
-            self, species: str) -> npt.NDArray[np.float64]:
+            self, species_name: str) -> npt.NDArray[np.float64]:
         """
         Get the formation properties for the specified species.
 
@@ -125,10 +127,10 @@ class FormationProperties:
         data = self._load_formation_properties()
 
         form_props = np.array([
-                data[species]["Hf0"],
-                data[species]["Gf0"],
-                data[species]["S0"],
-                data[species]["Hcomb"]])
+                data[species_name]["Hf0"],
+                data[species_name]["Gf0"],
+                data[species_name]["S0"],
+                data[species_name]["Hcomb"]])
 
         return form_props
 
@@ -174,13 +176,13 @@ class FormationReaction:
     Class to handle formation reaction data.
 
     """
-    def get_formation_reaction(self, species: str):
+    def get_formation_reaction(self, species_name: str):
         """
         Get the formation reactions for the specified species.
 
         """
         data = self._load_formation_reaction()
-        return data[species]
+        return data[species_name]
 
     def _load_formation_reaction(self):
         """
@@ -200,18 +202,18 @@ class Elements:
     Class to handle elements data.
 
     """
-    def get_elements(self, species: str) -> dict:
+    def get_elements(self, species_name: str) -> dict:
         """
         Get the elements that make up the specified species.
 
         """
-        species = species.replace(
+        species_name = species_name.replace(
             "(g)", "").replace(
                 "(l)", "").replace(
                     "(s)", "")
 
         data = self._load_elements()
-        return data[species]
+        return data[species_name]
 
     def _load_elements(self):
         """
