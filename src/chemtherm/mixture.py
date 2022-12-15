@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 
+from chemtherm import utils
 from chemtherm.species import Species
 
 logger = logging.getLogger(__name__)
@@ -71,8 +72,7 @@ class Mixture:
         for species in self.species_list:
             self.elements.extend(species.elements)
 
-        # Remove duplicates by using dictionaries
-        self.elements = list(dict.fromkeys(self.elements))
+        self.elements = utils.remove_duplicates(self.elements)
 
     def __repr__(self):
         return f"Mix: {[species.name for species in self.species_list]}"
