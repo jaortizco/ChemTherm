@@ -1,23 +1,51 @@
 import numpy as np
 
 from chemtherm import rxn
-from chemtherm.data import (CpCoefficients, CriticalConstants, Elements,
-                            FormationProperties, FormationReaction)
+from chemtherm.cp_coefficients import CpCoefficients
+from chemtherm.critical_constants import CriticalConstants
+from chemtherm.elements import Elements
+from chemtherm.formation_properties import FormationProperties
+from chemtherm.formation_reaction import FormationReaction
 
 
 class Species:
     def __init__(self, name: str):
         self.name = name
 
-        # I have to instantiate all classes. Is it be better to use functions
-        # instead.
+        self.critical_constants = CriticalConstants(self.name)
+        self.cp_coefficients = CpCoefficients(self.name)
+        self.formation_properties = FormationProperties(self.name)
+        self.form_rxn = FormationReaction(self.name)
+        self.elements = Elements(self.name)
 
-        self.crit_cons = CriticalConstants().get_critical_constants(self.name)
-        self.cp_coeffs = CpCoefficients().get_cp_coefficients(self.name)
-        self.form_props = FormationProperties().get_formation_properties(
-            self.name)
-        self.form_rxn = FormationReaction().get_formation_reaction(self.name)
-        self.elements = Elements().get_elements(self.name)
+        self._set_crit_cons()
+        self._set_cp_coeffs()
+        self._set_form_props()
+
+    def _set_crit_cons(self) -> None:
+        self.crit_cons = np.array([
+            self.critical_constants.Tc,
+            self.critical_constants.Pc,
+            self.critical_constants.Vc,
+            self.critical_constants.Zc,
+            self.critical_constants.w,])
+
+    def _set_cp_coeffs(self) -> None:
+        self.cp_coeffs = np.array([
+            self.cp_coefficients.A,
+            self.cp_coefficients.B,
+            self.cp_coefficients.C,
+            self.cp_coefficients.D,
+            self.cp_coefficients.E])
+
+    def _set_form_props(self) -> None:
+        self.form_props = np.array([
+            self.formation_properties.Hf0,
+            self.formation_properties.Gf0,
+            self.formation_properties.S0,
+            self.formation_properties.Hcomb])
+
+    # def get_
 
     def properties_at_T(
             self, T: float, Tref: float = 298.15) -> tuple[
@@ -48,19 +76,15 @@ class Species:
             Entropy of reaction at the given temperature in J mol^-1 K^-1.
 
         """
-        form_props = np.zeros(
-            (len(self.form_rxn["species"]), len(self.form_props)))
+        Hf0, S0 = (np.zeros(len(self.form_rxn.species)) for _ in range(2))
         cp_coeff = np.zeros(
-            (len(self.form_rxn["species"]), len(self.cp_coeffs)))
-        for i, species in enumerate(self.form_rxn["species"]):
-            form_props[i, :] = FormationProperties().get_formation_properties(
-                species)
-            cp_coeff[i, :] = CpCoefficients().get_cp_coefficients(species)
+            (len(self.form_rxn.species), len(self.cp_coeffs)))
+        for i, species in enumerate(self.form_rxn.species):
+            Hf0[i] = FormationProperties(species).Hf0
+            S0[i] = FormationProperties(species).S0
+            cp_coeff[i, :] = CpCoefficients(species).array
 
-        Hf0 = form_props[:, 0]
-        S0 = form_props[:, 2]
-
-        nu = np.array(self.form_rxn["nu"])
+        nu = np.array(self.form_rxn.nu)
 
         Hrxn0 = np.sum(nu*Hf0)
         Srxn0 = np.sum(nu*S0)
