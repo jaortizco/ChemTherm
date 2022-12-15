@@ -13,41 +13,41 @@ class Mixture:
         self.species_list = species_list
         self.num_species = len(species_list)
 
-        self._mix_critical_constants()
-        self._mix_cp_coefficients()
-        self._mix_formation_properties()
+        self._set_crit_cons()
+        self._set_cp_coefficients()
+        self._set_formation_properties()
         # self._mix_formation_reactions()
-        self._mix_elements()
+        self._set_elements()
 
-    def _mix_critical_constants(self):
+    def _set_crit_cons(self):
         """
         Get the critical constants for the mix as a 2D numpy array.
 
         """
         self.crit_cons = np.zeros(
-            (len(self.species_list), len(self.species_list[0].crit_cons)))
+            (len(self.species_list), 5))
 
         for i, species in enumerate(self.species_list):
             self.crit_cons[i, :] = species.crit_cons
 
-    def _mix_cp_coefficients(self):
+    def _set_cp_coefficients(self):
         """
         Get the cp coefficients for the mix as a 2D numpy array.
 
         """
         self.cp_coeffs = np.zeros(
-            (len(self.species_list), len(self.species_list[0].cp_coeffs)))
+            (len(self.species_list), 5))
 
         for i, species in enumerate(self.species_list):
             self.cp_coeffs[i, :] = species.cp_coeffs
 
-    def _mix_formation_properties(self):
+    def _set_formation_properties(self):
         """
         Get the formation properties for the mix as a 2D numpy array.
 
         """
         self.form_props = np.zeros(
-            (len(self.species_list), len(self.species_list[0].form_props)))
+            (len(self.species_list), 4))
 
         for i, species in enumerate(self.species_list):
             self.form_props[i, :] = species.form_props
@@ -63,14 +63,14 @@ class Mixture:
     #     for i, species in enumerate(self.species_list):
     #         self.form_rxns[i, :] = species.form_rxn
 
-    def _mix_elements(self):
+    def _set_elements(self):
         """
         Get the elements tha make up all species in the mix.
 
         """
         self.elements = []
         for species in self.species_list:
-            self.elements.extend(species.elements)
+            self.elements.extend(species.elements.elements)
 
         self.elements = utils.remove_duplicates(self.elements)
 
