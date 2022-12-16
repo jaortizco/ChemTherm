@@ -45,8 +45,6 @@ class Species:
             self.formation_properties.S0,
             self.formation_properties.Hcomb])
 
-    # def get_
-
     def properties_at_T(
             self, T: float, Tref: float = 298.15) -> tuple[
                 float, float, float]:
@@ -57,8 +55,8 @@ class Species:
         Parameters
         ----------
         species : list
-            List of strings containing the name of each species involved in the
-            reaction. For example, ["H2(g)", "O2(g)", "H2O(g)"].
+            List of strings containing the name of each species involved in
+            the reaction. For example, ["H2(g)", "O2(g)", "H2O(g)"].
         nu : array
             Stoichiometry coefficients of each especies.
         T : float
