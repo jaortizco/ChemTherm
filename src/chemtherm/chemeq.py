@@ -12,20 +12,6 @@ from chemtherm.mixture import Mixture
 logger = logging.getLogger(__name__)
 
 
-def check_species(species):
-    """
-    Check if variable `species` is a list.
-
-    An exeption is raised if not.
-
-    """
-    if not isinstance(species, list):
-        err = (
-            "The variable `species` should be a list.\n"
-            + "Check the parameters information.")
-        raise ValueError(err)
-
-
 def peng_robinson(
         T: float, P: float, y: npt.NDArray, Tc: npt.NDArray,
         Pc: npt.NDArray, w: npt.NDArray):

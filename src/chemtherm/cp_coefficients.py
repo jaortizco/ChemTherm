@@ -9,8 +9,7 @@ class CpCoefficients:
     Class to handle Cp coefficient data.
 
     """
-    def __init__(
-            self, species_name: str) -> None:
+    def __init__(self, species_name: str) -> None:
         """
         Get the Cp coefficients for the specified species.
 
@@ -23,7 +22,7 @@ class CpCoefficients:
         self.D = data[species_name]["coeff"]["D"]
         self.E = data[species_name]["coeff"]["E"]
 
-        self.array = np.array([self.A, self.B, self.C, self.D, self.E,])
+        self.array = np.array([self.A, self.B, self.C, self.D, self.E])
 
     def _load_cp_coefficients(self) -> dict:
         """

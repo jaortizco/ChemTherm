@@ -7,8 +7,7 @@ class FormationProperties:
     Class to handle formation properties data.
 
     """
-    def __init__(
-            self, species_name: str) -> None:
+    def __init__(self, species_name: str) -> None:
         """
         Get the formation properties for the specified species.
 
