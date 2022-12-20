@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Mixture:
-    def __init__(self, species_list: list[Species]):
+    def __init__(self, species_list: list[Species]) -> None:
         self.species_list = species_list
         self.num_species = len(species_list)
 
@@ -19,18 +19,17 @@ class Mixture:
         # self._mix_formation_reactions()
         self._set_elements()
 
-    def _set_crit_cons(self):
+    def _set_crit_cons(self) -> None:
         """
         Get the critical constants for the mix as a 2D numpy array.
 
         """
-        self.crit_cons = np.zeros(
-            (len(self.species_list), 5))
+        self.crit_cons = np.zeros((len(self.species_list), 5))
 
         for i, species in enumerate(self.species_list):
             self.crit_cons[i, :] = species.crit_cons
 
-    def _set_cp_coefficients(self):
+    def _set_cp_coefficients(self) -> None:
         """
         Get the cp coefficients for the mix as a 2D numpy array.
 
@@ -41,7 +40,7 @@ class Mixture:
         for i, species in enumerate(self.species_list):
             self.cp_coeffs[i, :] = species.cp_coeffs
 
-    def _set_formation_properties(self):
+    def _set_formation_properties(self) -> None:
         """
         Get the formation properties for the mix as a 2D numpy array.
 
@@ -63,7 +62,7 @@ class Mixture:
     #     for i, species in enumerate(self.species_list):
     #         self.form_rxns[i, :] = species.form_rxn
 
-    def _set_elements(self):
+    def _set_elements(self) -> None:
         """
         Get the elements tha make up all species in the mix.
 
@@ -74,7 +73,7 @@ class Mixture:
 
         self.elements = utils.remove_duplicates(self.elements)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Mix: {[species.name for species in self.species_list]}"
 
 
