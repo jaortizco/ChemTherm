@@ -62,7 +62,7 @@ def peng_robinson(
     Bmix = (bmix*P)/(con.R*T)
     # -------------------------------------------------------------------------
     # Calculate liquid and gas compressibility factor by finding the roots of
-    # the third grade polinomial
+    # the third grade polynomial
     poly = np.polynomial.Polynomial([
         (-Amix*Bmix + Bmix**2 + Bmix**3),
         (Amix - 3*Bmix**2 - 2*Bmix), (-1+Bmix), 1])
