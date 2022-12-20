@@ -112,9 +112,9 @@ def example_plot():
     n0 = np.array([7.89E-03, 1.97E-02, 0, 0, 0])
     # -------------------------------------------------------------------------
     n_eq, y_eq = (np.zeros((T.size, n0.size)) for _ in range(2))
-    for ii in range(T.size):
-        n_eq[ii, :], y_eq[ii, :] = chemeq.gibbs_minimization(
-            T[ii], P, n0, mix)
+    for i, Ti in enumerate(T):
+        n_eq[i, :], y_eq[i, :] = chemeq.gibbs_minimization(
+            Ti, P, n0, mix)
     # -------------------------------------------------------------------------
     fig, ax = plt.subplots(constrained_layout=True)
 
@@ -158,18 +158,28 @@ def equilibrium_constant():
 def main():
     start_time = time.perf_counter()
 
-    example_smith_vanness_abbott()
+    # example_smith_vanness_abbott()
     # example_web_app()
-    # example_plot()
+    example_plot()
     # equilibrium_constant()
 
     run_time = time.perf_counter() - start_time
     print(run_time)
 
-    plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
     # import cProfile
-    # cProfile.run("main()")
+    # import pstats
+    # from pstats import SortKey
+
+    # profiler = cProfile.Profile()
+    # profiler.enable()
+    # main()
+    # profiler.disable()
+
+    # stats = pstats.Stats(profiler)
+    # stats.strip_dirs()
+    # stats.sort_stats(SortKey.TIME).print_stats(30)
     main()

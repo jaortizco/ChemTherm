@@ -5,80 +5,12 @@ import numpy as np
 import numpy.typing as npt
 from scipy import optimize
 
-from chemtherm import phycons as con
+from chemtherm import phycons as pc
 from chemtherm import rxn
 from chemtherm.mixture import Mixture
+from chemtherm.peng_robinson import peng_robinson
 
 logger = logging.getLogger(__name__)
-
-
-def peng_robinson(
-        T: float, P: float, y: npt.NDArray, Tc: npt.NDArray,
-        Pc: npt.NDArray, w: npt.NDArray):
-    """
-    Calculate the compressibility factor of gas a mixture and the fugacity
-    coefficients of its components using the Peng-Robinson equation of state
-    and the van der Vaals mixing rule.
-
-    Parameters
-    ----------
-    T : scalar
-      Temperature in K
-    P : scalar
-      Pressure in bar. It will be converted to Pa within this function.
-    y : column vector
-      Mole fraction of all gas species
-
-    Returns
-    -------
-    phi : scalar
-      Fugacity coefficients of each species in the mixture.
-
-    """
-    P = P * 1e5  # bar --> Pa
-    # -------------------------------------------------------------------------
-    # Calculate a and b for pure components
-    k = 0.37464 + 1.54226*w - 0.26992 * w**2
-
-    alpha = (1 + k * (1 - np.sqrt(T/Tc)))**2
-
-    a = 0.45724 * ((con.R**2*Tc**2)/Pc)*alpha
-    b = 0.07780 * (con.R*Tc/Pc)
-    # -------------------------------------------------------------------------
-    # Calculate amix and bmix using the vaan der Waals mixing rule
-    aij = np.zeros((a.size, a.size))
-    for i in range(a.size):
-        for j in range(a.size):
-            aij[i, j] = np.sqrt(a[i] * a[j])
-
-    amix = y @ aij @ y
-    bmix = y @ b
-    # -------------------------------------------------------------------------
-    # Calculate A and B
-    Aij = (aij * P) / (con.R * T)**2
-    Bi = (b * P) / (con.R * T)
-
-    Amix = (amix*P)/(con.R*T)**2
-    Bmix = (bmix*P)/(con.R*T)
-    # -------------------------------------------------------------------------
-    # Calculate liquid and gas compressibility factor by finding the roots of
-    # the third grade polynomial
-    poly = np.polynomial.Polynomial([
-        (-Amix*Bmix + Bmix**2 + Bmix**3),
-        (Amix - 3*Bmix**2 - 2*Bmix), (-1+Bmix), 1])
-
-    Z = poly.roots()
-
-    Z = np.real(Z)
-    Zmix = np.max(Z)
-    # -------------------------------------------------------------------------
-    # Calculate the fugacity coefficients
-    lnphi = (
-        (Bi/Bmix)*(Zmix-1) - np.log(Zmix-Bmix)
-        - (Amix/(2*np.sqrt(2)*Bmix))*((2*(Aij@y)/Amix)-(Bi/Bmix))*np.log(
-            (Zmix+(1+np.sqrt(2))*Bmix)/(Zmix+(1-np.sqrt(2))*Bmix)))
-    # -------------------------------------------------------------------------
-    return np.exp(lnphi)
 
 
 def especies_properties(
@@ -234,15 +166,14 @@ def activity(T, P, y, crit_cons, P0=1):
 
     # Real gas
     phi = peng_robinson(
-        T, P, y,
-        crit_cons[:, 0], crit_cons[:, 1], crit_cons[:, 4])
+        T, P, y, crit_cons[:, 0], crit_cons[:, 1], crit_cons[:, 4])
 
     return y*phi*P/P0
 
 
 def gibbs_objfun(
-        n: npt.NDArray, T: float, P: float, Grxn: npt.NDArray,
-        mix: Mixture) -> float:
+        n: npt.NDArray[np.float64], T: float, P: float,
+        Grxn: npt.NDArray[np.float64], mix: Mixture) -> float:
     """
     Objective function for the Gibbs energy minimization.
 
@@ -271,7 +202,7 @@ def gibbs_objfun(
     """
     y = n/np.sum(n)
 
-    GRT = Grxn/(con.R*T)
+    GRT = Grxn/(pc.R*T)
 
     a = activity(T, P, y, mix.crit_cons)
 
@@ -283,7 +214,7 @@ def gibbs_objfun(
         lna = np.log(a)
         value = n*(GRT + lna)
 
-    return np.sum(value)
+    return value.sum()
 
 
 def gibbs_minimization(
@@ -390,7 +321,7 @@ def eq_cons(
     """
 
     Hrxn, Grxn, Srxn = reaction_properties(mix, nu, T, Tref=298.15)
-    Kp = np.exp(-Grxn / (con.R*T))
+    Kp = np.exp(-Grxn / (pc.R*T))
 
     return Kp, Hrxn, Grxn, Srxn
 
