@@ -28,25 +28,23 @@ def peng_robinson(
 
     """
     P = P * 1e5  # bar --> Pa
-    # -------------------------------------------------------------------------
-    # Calculate a and b for pure components
-    k = 0.37464 + 1.54226*w - 0.26992*w**2
 
+    k = 0.37464 + 1.54226*w - 0.26992*w**2
     alpha = (1 + k*(1-np.sqrt(T/Tc)))**2
 
     a = 0.45724*((pc.R**2*Tc**2)/Pc)*alpha
     b = 0.07780*(pc.R*Tc/Pc)
-    # -------------------------------------------------------------------------
+
     aij, amix, bmix = _vaanderWaals_mixing_rule(y, a, b)
-    # -------------------------------------------------------------------------
-    # Calculate A and B
+
     Aij = (aij*P)/(pc.R*T)**2
     Bi = (b*P)/(pc.R*T)
 
     Amix = (amix*P)/(pc.R*T)**2
     Bmix = (bmix*P)/(pc.R*T)
-    # -------------------------------------------------------------------------
+
     Zmix = _compressibility_factor(Amix, Bmix)
+
     lnphi = _calculate_lnphi(y, Aij, Bi, Amix, Bmix, Zmix)
 
     return np.exp(lnphi)
@@ -78,9 +76,12 @@ def _compressibility_factor(Amix: float, Bmix: float) -> float:
     the third grade polynomial.
 
     """
-    poly = np.polynomial.Polynomial([
-        (-Amix*Bmix + Bmix**2 + Bmix**3),
-        (Amix - 3*Bmix**2 - 2*Bmix), (-1+Bmix), 1])
+    a0 = -Amix*Bmix + Bmix**2 + Bmix**3
+    a1 = Amix - 3*Bmix**2 - 2*Bmix
+    a2 = -1 + Bmix
+    a3 = 1
+
+    poly = np.polynomial.Polynomial([a0, a1, a2, a3])
 
     Z = poly.roots()
     Z = np.real(Z)
