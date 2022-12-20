@@ -1,6 +1,8 @@
 import json
 import pathlib
 
+import numpy as np
+
 
 class FormationProperties:
     """
@@ -18,6 +20,8 @@ class FormationProperties:
         self.Gf0 = data[species_name]["Gf0"]
         self.S0 = data[species_name]["S0"]
         self.Hcomb = data[species_name]["Hcomb"]
+
+        self.array = np.array([self.Hf0, self.Gf0, self.S0, self.Hcomb])
 
     def _load_formation_properties(self) -> dict:
         """

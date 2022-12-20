@@ -44,11 +44,9 @@ def heat_capacity(Cp_coeff, T):
 
     """
     Cp = (
-        Cp_coeff[0]*1e5
-        + (Cp_coeff[1]*1e5
-            * ((Cp_coeff[2]*1e3 / T) / np.sinh(Cp_coeff[2]*1e3 / T))**2)
-        + (Cp_coeff[3]*1e5
-            * ((Cp_coeff[4] / T) / np.cosh(Cp_coeff[4] / T))**2))
+        Cp_coeff[0]
+        + (Cp_coeff[1] * ((Cp_coeff[2]/T) / np.sinh(Cp_coeff[2]/T))**2)
+        + (Cp_coeff[3] * ((Cp_coeff[4]/T) / np.cosh(Cp_coeff[4]/T))**2))
 
     #  Cp is converted to J mol^-1 K^-1
     return Cp / 1000

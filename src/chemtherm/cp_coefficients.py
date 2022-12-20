@@ -16,10 +16,10 @@ class CpCoefficients:
         """
         data = self._load_cp_coefficients()
 
-        self.A = data[species_name]["coeff"]["A"]
-        self.B = data[species_name]["coeff"]["B"]
-        self.C = data[species_name]["coeff"]["C"]
-        self.D = data[species_name]["coeff"]["D"]
+        self.A = data[species_name]["coeff"]["A"]*1e5
+        self.B = data[species_name]["coeff"]["B"]*1e5
+        self.C = data[species_name]["coeff"]["C"]*1e3
+        self.D = data[species_name]["coeff"]["D"]*1e5
         self.E = data[species_name]["coeff"]["E"]
 
         self.array = np.array([self.A, self.B, self.C, self.D, self.E])

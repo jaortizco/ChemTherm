@@ -27,7 +27,7 @@ class Mixture:
         self.crit_cons = np.zeros((len(self.species_list), 5))
 
         for i, species in enumerate(self.species_list):
-            self.crit_cons[i, :] = species.crit_cons
+            self.crit_cons[i, :] = species.crit_cons.array
 
     def _set_cp_coefficients(self) -> None:
         """
@@ -38,7 +38,7 @@ class Mixture:
             (len(self.species_list), 5))
 
         for i, species in enumerate(self.species_list):
-            self.cp_coeffs[i, :] = species.cp_coeffs
+            self.cp_coeffs[i, :] = species.cp_coeffs.array
 
     def _set_formation_properties(self) -> None:
         """
@@ -49,7 +49,7 @@ class Mixture:
             (len(self.species_list), 4))
 
         for i, species in enumerate(self.species_list):
-            self.form_props[i, :] = species.form_props
+            self.form_props[i, :] = species.form_props.array
 
     # def _mix_formation_reactions(self):
     #     """

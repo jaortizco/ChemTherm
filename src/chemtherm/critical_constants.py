@@ -1,6 +1,8 @@
 import json
 import pathlib
 
+import numpy as np
+
 from chemtherm import utils
 
 
@@ -23,6 +25,8 @@ class CriticalConstants:
         self.Vc = data[species_name]["Vc"]*1e3
         self.Zc = data[species_name]["Zc"]
         self.w = data[species_name]["w"]
+
+        self.array = np.array([self.Tc, self.Pc, self.Vc, self.Zc, self.w])
 
     def _load_critical_constants(self) -> dict:
         """
