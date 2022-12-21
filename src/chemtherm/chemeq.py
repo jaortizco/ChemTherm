@@ -320,49 +320,10 @@ def eq_cons(
 
     """
 
-    Hrxn, Grxn, Srxn = reaction_properties(mix, nu, T, Tref=298.15)
+    Hrxn, Grxn, Srxn = rxn.reaction_properties(
+        T, mix.form_props[:, 0], mix.form_props[:, 2], mix.cp_coeffs, nu,
+        Tref)
+
     Kp = np.exp(-Grxn / (pc.R*T))
 
     return Kp, Hrxn, Grxn, Srxn
-
-
-def reaction_properties(
-        mix: Mixture, nu: npt.NDArray[np.int32], T: float,
-        Tref: float = 298.15):
-    """
-    Compute the enthalpy, the gibbs energy, and the entropy of a given
-    reaction at a specified temperature.
-
-    Parameters
-    ----------
-    species : list
-        List of strings containing the name of each species involved in the
-        reaction. For example, ["H2(g)", "O2(g)", "H2O(g)"].
-    nu : array
-        Stoichiometry coefficients of each especies.
-    T : float
-        Temperature in K.
-    Tref : float, optional
-        Reference temperature in K.
-
-    Returns
-    -------
-    Hrxn : float
-        Enthalpy of reaction at the given temperature in J mol^-1.
-    Grxn : float
-        Gibbs free energy of reaction at the given temperature in J mol^-1.
-    Srxn : float
-        Entropy of reaction at the given temperature in J mol^-1 K^-1.
-
-    """
-    Hf0 = mix.form_props[:, 0]
-    S0 = mix.form_props[:, 2]
-
-    Hrxn0 = np.sum(nu*Hf0)
-    Srxn0 = np.sum(nu*S0)
-
-    Hrxn = rxn.enthalpy(Hrxn0, nu, mix.cp_coeffs, T, Tref)
-    Srxn = rxn.entropy(Srxn0, nu, mix.cp_coeffs, T, Tref)
-    Grxn = Hrxn - T*Srxn
-
-    return Hrxn, Grxn, Srxn

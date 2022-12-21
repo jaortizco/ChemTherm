@@ -20,7 +20,7 @@ class Species:
 
     def properties_at_T(
             self, T: float, Tref: float = 298.15) -> tuple[
-                float, float, float]:
+            np.float64, np.float64, np.float64]:
         """
         Compute the enthalpy, the gibbs energy, and the entropy of a given
         reaction at a specified temperature.
@@ -57,11 +57,7 @@ class Species:
 
         nu = np.array(self.form_rxn.nu)
 
-        Hrxn0 = np.sum(nu*Hf0)
-        Srxn0 = np.sum(nu*S0)
+        Hrxn, Grxn, Srxn = rxn.reaction_properties(
+            T, Hf0, S0, Cp_coeff, nu, Tref)
 
-        Hrxn = rxn.enthalpy(Hrxn0, nu, Cp_coeff, T, Tref)
-        Srxn = rxn.entropy(Srxn0, nu, Cp_coeff, T, Tref)
-        Grxn = Hrxn - T*Srxn
-
-        return Hrxn, Grxn, Srxn
+        return Hrxn, Grxn, Srxn  # type: ignore

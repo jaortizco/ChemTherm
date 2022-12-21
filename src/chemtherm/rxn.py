@@ -3,7 +3,7 @@ import numpy.typing as npt
 from scipy import integrate
 
 
-def heat_capacity(Cp_coeff, T):
+def heat_capacity(T: float, coeff: npt.NDArray[np.float64]) -> float:
     """
     Calculate the ideal gas heat capacity at a given temperature.
 
@@ -14,16 +14,8 @@ def heat_capacity(Cp_coeff, T):
     ----------
     T : float
         Temperature in K.
-    Tref : float, optional
-        Reference temperature in K.
-    H0rxn : float
-        Enthalpy of reaction at the standard state in J mol^-1.
-    Cp_coefs : array
-        Matrix of heat capacity constants fitted to hyperbolic functions.
-        Columns: A, B, C, D, E.
-        Rows represent different species.
-    v : array
-        Stoichiometry coefficients of each especies.
+    coeff : array_like
+        Heat capacity coefficients coefficients fitted to hyperbolic functions.
 
     Returns
     -------
@@ -44,30 +36,30 @@ def heat_capacity(Cp_coeff, T):
 
     """
     Cp = (
-        Cp_coeff[0]
-        + (Cp_coeff[1] * ((Cp_coeff[2]/T) / np.sinh(Cp_coeff[2]/T))**2)
-        + (Cp_coeff[3] * ((Cp_coeff[4]/T) / np.cosh(Cp_coeff[4]/T))**2))
+        coeff[0]
+        + (coeff[1] * ((coeff[2]/T) / np.sinh(coeff[2]/T))**2)
+        + (coeff[3] * ((coeff[4]/T) / np.cosh(coeff[4]/T))**2))
 
     #  Cp is converted to J mol^-1 K^-1
     return Cp / 1000
 
 
 def heat_capacity_rxn(
-        nu: npt.NDArray[np.float64], coeff: npt.NDArray[np.float64],
-        T: float) -> np.float64:
+        T: float, nu: npt.NDArray[np.float64], coeff: npt.NDArray[np.float64],
+        ) -> float:
     """
     Compute the change in the heat capacity due to the reaction.
 
     Parameters
     ----------
-    nu : array
-        Stoichiometry coefficients of each especies.
-    Cp_coefs : array
-        Matrix of heat capacity constants fitted to hyperbolic functions.
-        Columns: A, B, C, D, E.
-        Rows represent different species.
     T : float
         Temperature in K.
+    nu : array
+        Stoichiometry coefficients of each especies.
+    coeff : array_like
+        Matrix of heat capacity constants fitted to hyperbolic functions.
+        Rows: represent different species.
+        Columns: A, B, C, D, E.
 
     Returns
     -------
@@ -77,14 +69,14 @@ def heat_capacity_rxn(
     """
     Cp = np.zeros(nu.size)
     for i in range(nu.size):
-        Cp[i] = heat_capacity(coeff[i], T)
+        Cp[i] = heat_capacity(T, coeff[i])
 
-    return np.sum(nu*Cp)
+    return nu@Cp  # type: ignore
 
 
 def enthalpy(
-        Hf0: np.float64, nu: npt.NDArray, Cp_coeff: npt.NDArray,
-        T: float, Tref: float = 298.15) -> float:
+        T: float, nu: npt.NDArray, Cp_coeff: npt.NDArray,
+        Tref: float = 298.15) -> float:
     """
     Evaluate the enthalpy of reaction at a given temperature.
 
@@ -110,14 +102,14 @@ def enthalpy(
 
     """
     def integral(T, nu, Cp_coeff):
-        return heat_capacity_rxn(nu, Cp_coeff, T)
+        return heat_capacity_rxn(T, nu, Cp_coeff)
 
-    return Hf0 + integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
+    return integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
 
 
 def entropy(
-        S0: np.float64, nu: npt.NDArray, Cp_coeff: npt.NDArray,
-        T: float, Tref: float = 298.15) -> float:
+        T: float, nu: npt.NDArray, Cp_coeff: npt.NDArray,
+        Tref: float = 298.15) -> float:
     """
     Evaluate the entropy of reaction at a given temperature.
 
@@ -143,6 +135,52 @@ def entropy(
 
     """
     def integral(T, nu, Cp_coeff):
-        return heat_capacity_rxn(nu, Cp_coeff, T)/T
+        return heat_capacity_rxn(T, nu, Cp_coeff)/T
 
-    return S0 + integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
+    return integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
+
+
+def reaction_properties(
+        T: float, Hf0: npt.NDArray[np.float64], S0: npt.NDArray[np.float64],
+        Cp_coeff: npt.NDArray[np.float64], nu: npt.NDArray[np.int32],
+        Tref: float = 298.15) -> tuple[float, float, float]:
+    """
+    Compute the enthalpy, the gibbs energy, and the entropy of a given
+    reaction at a specified temperature.
+
+    Parameters
+    ----------
+    T : float
+        Temperature in K.
+    Hf0 : array_like
+        Standard enthalpy of formation of each species in J mol^-1.
+    S0 : array_like
+        Standard entropy of each species in J mol^-1 K^-1.
+    Cp_coeff : array_like
+        Matrix of heat capacity constants fitted to hyperbolic functions.
+        Rows: represent different species.
+        Columns: A, B, C, D, E.
+    nu : array
+        Stoichiometry coefficients of each especies.
+    Tref : float, optional
+        Reference temperature in K.
+
+    Returns
+    -------
+    Hrxn : float
+        Enthalpy of reaction at the given temperature in J mol^-1.
+    Grxn : float
+        Gibbs free energy of reaction at the given temperature in J mol^-1.
+    Srxn : float
+        Entropy of reaction at the given temperature in J mol^-1 K^-1.
+
+    """
+
+    Hrxn0 = nu@Hf0
+    Srxn0 = nu@S0
+
+    Hrxn = Hrxn0 + enthalpy(T, nu, Cp_coeff, Tref)  # type: ignore
+    Srxn = Srxn0 + entropy(T, nu, Cp_coeff, Tref)  # type: ignore
+    Grxn = Hrxn - T*Srxn
+
+    return Hrxn, Grxn, Srxn  # type: ignore

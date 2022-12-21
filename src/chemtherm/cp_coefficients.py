@@ -41,7 +41,7 @@ class CpCoefficients:
         """
         # Load Cp coefficients database
         dir = pathlib.Path(__file__).resolve().parent
-        db_file = pathlib.Path(dir, "data/db_cp.json")
+        db_file = pathlib.Path(dir, "data/db_heat_capacity.json")
 
         with open(db_file, "r") as jfile:
             return json.load(jfile)
