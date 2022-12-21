@@ -74,7 +74,7 @@ def heat_capacity_rxn(
     return nu@Cp  # type: ignore
 
 
-def enthalpy(
+def enthalpy_integral(
         T: float, nu: npt.NDArray, Cp_coeff: npt.NDArray,
         Tref: float = 298.15) -> float:
     """
@@ -107,7 +107,7 @@ def enthalpy(
     return integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
 
 
-def entropy(
+def entropy_integral(
         T: float, nu: npt.NDArray, Cp_coeff: npt.NDArray,
         Tref: float = 298.15) -> float:
     """
@@ -179,8 +179,8 @@ def reaction_properties(
     Hrxn0 = nu@Hf0
     Srxn0 = nu@S0
 
-    Hrxn = Hrxn0 + enthalpy(T, nu, Cp_coeff, Tref)  # type: ignore
-    Srxn = Srxn0 + entropy(T, nu, Cp_coeff, Tref)  # type: ignore
+    Hrxn = Hrxn0 + enthalpy_integral(T, nu, Cp_coeff, Tref)
+    Srxn = Srxn0 + entropy_integral(T, nu, Cp_coeff, Tref)
     Grxn = Hrxn - T*Srxn
 
     return Hrxn, Grxn, Srxn  # type: ignore
