@@ -7,15 +7,12 @@ def heat_capacity(T: float, coeff: npt.NDArray[np.float64]) -> float:
     """
     Calculate the ideal gas heat capacity at a given temperature.
 
-    This funtion evaluates the enthalpy of reaction of any reaction at
-    a given temperature.
-
     Parameters
     ----------
     T : float
         Temperature in K.
     coeff : array_like
-        Heat capacity coefficients coefficients fitted to hyperbolic functions.
+        Heat capacity coefficients.
 
     Returns
     -------
@@ -24,58 +21,22 @@ def heat_capacity(T: float, coeff: npt.NDArray[np.float64]) -> float:
 
     Notes
     -----
-    Cp coefficients should be taken from Table 2-156 of Perry's Chemical
-    Engineering Handbook, 8th Edition. At the same time, values in this
-    table were taken from the Design Institute for Physical Properties
-    (DIPPR) of the American Institute of Chemical Engineers (AIChE),
-    copyright 2007 AIChE and reproduced with permission of AICHE and of
-    the DIPPR Evaluated Process Design Data Project Steering Committee.
+    Cp coefficients are taken from the Chemical Properties Handbook: Physical,
+    Thermodynamics, Environmental Transport, Safety & Health Related
+    Properties for Organic & Chemical engineering, 1st Edition. Carl L. Yaws.
+    McGraw-Hill Education, 1999. ISBN 0070734011, 9780070734012.
 
-    Cp = A + B*((C/T)/sinh(C/T))^2 + D*((E/T)/cosh(E/T))^2
-    where Cp is in J kmol^-1 K^-1 and T is in K.
+    Cp = A + B*T + C*T^2 + D*T^3 + E*T^4
+    where Cp is in J mol^-1 K^-1 and T is in K.
 
     """
-    Cp = (
-        coeff[0]
-        + (coeff[1] * ((coeff[2]/T) / np.sinh(coeff[2]/T))**2)
-        + (coeff[3] * ((coeff[4]/T) / np.cosh(coeff[4]/T))**2))
-
-    #  Cp is converted to J mol^-1 K^-1
-    return Cp / 1000
-
-
-def heat_capacity_rxn(
-        T: float, nu: npt.NDArray[np.float64], coeff: npt.NDArray[np.float64],
-        ) -> float:
-    """
-    Compute the change in the heat capacity due to the reaction.
-
-    Parameters
-    ----------
-    T : float
-        Temperature in K.
-    nu : array
-        Stoichiometry coefficients of each especies.
-    coeff : array_like
-        Matrix of heat capacity constants fitted to hyperbolic functions.
-        Rows: represent different species.
-        Columns: A, B, C, D, E.
-
-    Returns
-    -------
-    float
-        Cp of reaction in J mol^-1 K^-1.
-
-    """
-    Cp = np.zeros(nu.size)
-    for i in range(nu.size):
-        Cp[i] = heat_capacity(T, coeff[i])
-
-    return nu@Cp  # type: ignore
+    return (
+        coeff[0] + coeff[1]*T + coeff[2]*T**2
+        + coeff[3]*T**3 + coeff[4]*T**4)
 
 
 def enthalpy_integral(
-        T: float, nu: npt.NDArray, Cp_coeff: npt.NDArray,
+        T: float, Cp_coeff: npt.NDArray,
         Tref: float = 298.15) -> float:
     """
     Evaluate the enthalpy of reaction at a given temperature.
@@ -89,7 +50,7 @@ def enthalpy_integral(
     H0rxn : float
         Enthalpy of reaction at the standard state in J mol^-1.
     Cp_coefs : array
-        Matrix of heat capacity constants fitted to hyperbolic functions.
+        Matrix of heat capacity coefficients.
         Columns: A, B, C, D, E.
         Rows represent different species.
     nu : array
@@ -101,14 +62,14 @@ def enthalpy_integral(
         Enthalpy of reaction at the given temperature in J mol^-1.
 
     """
-    def integral(T, nu, Cp_coeff):
-        return heat_capacity_rxn(T, nu, Cp_coeff)
+    def integral(T, Cp_coeff):
+        return heat_capacity(T, Cp_coeff)
 
-    return integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
+    return integrate.quad(integral, Tref, T, args=(Cp_coeff))[0]
 
 
 def entropy_integral(
-        T: float, nu: npt.NDArray, Cp_coeff: npt.NDArray,
+        T: float, Cp_coeff: npt.NDArray,
         Tref: float = 298.15) -> float:
     """
     Evaluate the entropy of reaction at a given temperature.
@@ -122,7 +83,7 @@ def entropy_integral(
     H0rxn : float
         Enthalpy of reaction at the standard state in J mol^-1.
     Cp_coefs : array
-        Matrix of heat capacity constants fitted to hyperbolic functions.
+        Matrix of heat capacity coefficients.
         Columns: A, B, C, D, E.
         Rows represent different species.
     v : array
@@ -134,10 +95,10 @@ def entropy_integral(
         Entropy of reaction at the given temperature in J mol^-1 K^-1.
 
     """
-    def integral(T, nu, Cp_coeff):
-        return heat_capacity_rxn(T, nu, Cp_coeff)/T
+    def integral(T, Cp_coeff):
+        return heat_capacity(T, Cp_coeff)/T
 
-    return integrate.quad(integral, Tref, T, args=(nu, Cp_coeff))[0]
+    return integrate.quad(integral, Tref, T, args=(Cp_coeff))[0]
 
 
 def reaction_properties(
@@ -157,7 +118,7 @@ def reaction_properties(
     S0 : array_like
         Standard entropy of each species in J mol^-1 K^-1.
     Cp_coeff : array_like
-        Matrix of heat capacity constants fitted to hyperbolic functions.
+        Matrix of heat capacity coefficients.
         Rows: represent different species.
         Columns: A, B, C, D, E.
     nu : array
@@ -178,9 +139,10 @@ def reaction_properties(
 
     Hrxn0 = nu@Hf0
     Srxn0 = nu@S0
+    Cprxn_coeff = nu@Cp_coeff
 
-    Hrxn = Hrxn0 + enthalpy_integral(T, nu, Cp_coeff, Tref)
-    Srxn = Srxn0 + entropy_integral(T, nu, Cp_coeff, Tref)
+    Hrxn = Hrxn0 + enthalpy_integral(T, Cprxn_coeff, Tref)
+    Srxn = Srxn0 + entropy_integral(T, Cprxn_coeff, Tref)
     Grxn = Hrxn - T*Srxn
 
     return Hrxn, Grxn, Srxn  # type: ignore
