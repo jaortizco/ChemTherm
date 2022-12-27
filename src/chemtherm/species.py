@@ -1,6 +1,8 @@
+import re
+
 import numpy as np
 
-from chemtherm import rxn
+from chemtherm import rxn, utils
 from chemtherm.cp_coefficients import CpCoefficients
 from chemtherm.critical_constants import CriticalConstants
 from chemtherm.elements import Elements
@@ -17,6 +19,32 @@ class Species:
         self.form_props = FormationProperties(self.name)
         self.form_rxn = FormationReaction(self.name)
         self.elements = Elements(self.name)
+
+    def calculate_atom_stoichiometry(self) -> None:
+        """
+        Get the different type of atoms that make up a molecule and their
+        number of acurrences.
+
+        Parameters
+        ----------
+        species : list
+            List of strings containing the name of each species involved in
+            the equilibrium. For example, ["H2(g)", "O2(g)", "H2O(g)"].
+
+        Returns
+        -------
+        atom_stoichiometryc : dict
+            Different type of atoms that make up a molecule and their number
+            of acurrences.
+
+        """
+        atom_stoic = re.findall(
+            r'[A-Z][a-z]*|\d+',
+            re.sub(
+                r'[A-Z][a-z]*(?![\da-z])', r'\g<0>1',
+                self.name))
+
+        self.atom_stoic = utils.list2dict(atom_stoic)
 
     def properties_at_T(
             self, T: float, Tref: float = 298.15) -> tuple[
