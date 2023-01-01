@@ -19,6 +19,26 @@ class Mixture:
         # self._mix_formation_reactions()
         self._set_elements()
 
+    def calculate_stoichiometry_matrix(self) -> None:
+        """
+        Calculate the stoichiometry matrix for the mixture.
+
+        The matrix rows represent each species while the columns represent
+        each atom.
+
+        Notes
+        -----
+        These matrix can be used for calculating the atom balance in the Gibbs
+        free energy minimization method, for example.
+
+        """
+        self.stoic_matrix = np.zeros((self.num_species, len(self.elements)))
+        for i, species in enumerate(self.species_list):
+            species.calculate_atom_stoichiometry()
+            for j, element in enumerate(self.elements):
+                self.stoic_matrix[i, j] = float(
+                    species.atom_stoic.get(element, 0))
+
     def _set_crit_cons(self) -> None:
         """
         Get the critical constants for the mix as a 2D numpy array.

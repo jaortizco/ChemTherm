@@ -1,5 +1,4 @@
 import logging
-import re
 
 import numpy as np
 import numpy.typing as npt
@@ -49,58 +48,6 @@ def especies_properties(
     return Hrxn, Grxn, Srxn
 
 
-def list2dict(lst):
-    """
-    Convert a list into a dictionary.
-
-    The first element of the list will be the first key of the dictonary and
-    the second element of the list will be the first value of the dictionary.
-
-    Parameters
-    ----------
-    lst : list
-        List to be converted into a dictionary.
-
-    Returns
-    -------
-    dict
-        Dictionary.
-
-    """
-    mydict = {}
-    for index, item in enumerate(lst):
-        if index % 2 == 0:
-            mydict[item] = lst[index+1]
-
-    return mydict
-
-
-def atom_stoichiometry(species: str) -> dict:
-    """
-    Get the different type of atoms that make up a molecule and their number
-    of acurrences.
-
-    Parameters
-    ----------
-    species : list
-        List of strings containing the name of each species involved in the
-        equilibrium. For example, ["H2(g)", "O2(g)", "H2O(g)"].
-
-    Returns
-    -------
-    atom_stoichiometryc : dict
-        Different type of atoms that make up a molecule and their number
-        of acurrences.
-
-    """
-    atom_stoic = re.findall(
-        r'[A-Z][a-z]*|\d+',
-        re.sub(r'[A-Z][a-z]*(?![\da-z])', r'\g<0>1',
-               species))
-
-    return list2dict(atom_stoic)
-
-
 def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
     """
     Calculate the total number of moles of each atom in the mixture.
@@ -112,9 +59,6 @@ def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
     species : list
         List of strings containing the name of each species involved in the
         equilibrium. For example, ["H2(g)", "O2(g)", "H2O(g)"].
-    elements : list
-        List of strings containing the name of each element that makes up all
-        species. For example, ["H", "O"].
 
     Returns
     -------
@@ -122,14 +66,7 @@ def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
         Number of moles of each atom in mol.
 
     """
-    n_atom = np.zeros((mix.num_species, len(mix.elements)))
-    for i, species in enumerate(mix.species_list):
-        atom_stoic = atom_stoichiometry(species.name)
-        for j, element in enumerate(mix.elements):
-            if element in atom_stoic:
-                n_atom[i, j] = n[i]*int(atom_stoic[element])
-
-    return np.sum(n_atom, axis=0)
+    return n @ mix.stoic_matrix
 
 
 def activity(T, P, y, crit_cons, P0=1):
@@ -254,6 +191,8 @@ def gibbs_minimization(
     n0 = n0/scaling_factor
     # -------------------------------------------------------------------------
     _, Grxn, _ = especies_properties(mix, T)
+
+    mix.calculate_stoichiometry_matrix()
     atom_moles_init = atom_balance(n0, mix)
     # -------------------------------------------------------------------------
     # Constraints:
