@@ -22,7 +22,7 @@ class Species:
 
     def calculate_atom_stoichiometry(self) -> None:
         """
-        Get the different type of atoms that make up a molecule and their
+        Get the different type of atoms that make up a species and their
         number of acurrences.
 
         Parameters

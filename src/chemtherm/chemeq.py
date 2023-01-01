@@ -59,9 +59,6 @@ def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
     species : list
         List of strings containing the name of each species involved in the
         equilibrium. For example, ["H2(g)", "O2(g)", "H2O(g)"].
-    elements : list
-        List of strings containing the name of each element that makes up all
-        species. For example, ["H", "O"].
 
     Returns
     -------
@@ -69,13 +66,7 @@ def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
         Number of moles of each atom in mol.
 
     """
-    n_atom = np.zeros((mix.num_species, len(mix.elements)))
-    for i, species in enumerate(mix.species_list):
-        for j, element in enumerate(mix.elements):
-            if element in species.atom_stoic:
-                n_atom[i, j] = n[i]*int(species.atom_stoic[element])
-
-    return np.sum(n_atom, axis=0)
+    return n @ mix.stoic_matrix
 
 
 def activity(T, P, y, crit_cons, P0=1):
@@ -201,9 +192,7 @@ def gibbs_minimization(
     # -------------------------------------------------------------------------
     _, Grxn, _ = especies_properties(mix, T)
 
-    for species in mix.species_list:
-        species.calculate_atom_stoichiometry()
-
+    mix.calculate_stoichiometry_matrix()
     atom_moles_init = atom_balance(n0, mix)
     # -------------------------------------------------------------------------
     # Constraints:

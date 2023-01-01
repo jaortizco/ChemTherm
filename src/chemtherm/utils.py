@@ -13,7 +13,7 @@ def strip_species_name(species_name: str) -> str:
     return species_name.replace(
         "(g)", "").replace(
             "(l)", "").replace(
-                    "(s)", "")
+                "(s)", "")
 
 
 def remove_duplicates(mylist: list) -> list:
