@@ -8,6 +8,7 @@ from chemtherm.critical_constants import CriticalConstants
 from chemtherm.elements import Elements
 from chemtherm.formation_properties import FormationProperties
 from chemtherm.formation_reaction import FormationReaction
+from chemtherm.molecular_weight import MolecularWeight
 
 
 class Species:
@@ -19,6 +20,7 @@ class Species:
         self.form_props = FormationProperties(self.name)
         self.form_rxn = FormationReaction(self.name)
         self.elements = Elements(self.name)
+        self.M = MolecularWeight(self.name).load_molecular_weight()
 
     def calculate_atom_stoichiometry(self) -> None:
         """
