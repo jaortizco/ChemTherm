@@ -7,7 +7,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from chemtherm import chemeq
+from chemtherm import chemeq, utils
 from chemtherm.mixture import Mixture
 from chemtherm.species import Species
 
@@ -46,7 +46,7 @@ def example_smith_vanness_abbott():
     n_eq, y_eq = chemeq.gibbs_minimization(T, P, n0, mix)
     # -------------------------------------------------------------------------
     y_eq_example = np.array([0.0196, 0.0980, 0.1743, 0.6710, 0.0371])
-    diff = np.abs(y_eq_example - y_eq) / y_eq_example * 100
+    diff = np.abs(y_eq_example - y_eq)/y_eq_example*100
     # -------------------------------------------------------------------------
     data = np.column_stack((y_eq, y_eq_example, diff))
 
@@ -82,7 +82,7 @@ def example_web_app():
     n_eq, y_eq = chemeq.gibbs_minimization(T, P, n0, mix)
     # -------------------------------------------------------------------------
     y_eq_example = np.array([0.17977, 0.13054, 0.11089, 0.52958, 0.049229])
-    diff = np.abs(y_eq_example - y_eq) / y_eq_example * 100
+    diff = np.abs(y_eq_example - y_eq)/y_eq_example*100
     # -------------------------------------------------------------------------
     data = np.column_stack((y_eq, y_eq_example, diff))
 
@@ -113,12 +113,11 @@ def example_plot():
     # -------------------------------------------------------------------------
     n_eq, y_eq = (np.zeros((T.size, n0.size)) for _ in range(2))
     for i, Ti in enumerate(T):
-        n_eq[i, :], y_eq[i, :] = chemeq.gibbs_minimization(
-            Ti, P, n0, mix)
+        n_eq[i, :], y_eq[i, :] = chemeq.gibbs_minimization(Ti, P, n0, mix)
     # -------------------------------------------------------------------------
     fig, ax = plt.subplots(constrained_layout=True)
 
-    ax.plot(T-273.15, n_eq)
+    ax.plot(T - 273.15, n_eq)
     # ax.legend(species, frameon=False, loc="best", fontsize=14, ncol=2)
 
     ax.set_xlabel("Temperature (°C)")
@@ -130,7 +129,7 @@ def example_plot():
     # -------------------------------------------------------------------------
     _, ax = plt.subplots(constrained_layout=True)
 
-    ax.plot(T-273.15, y_eq*100)
+    ax.plot(T - 273.15, y_eq*100)
     # ax.legend(species, frameon=False, loc="best", fontsize=14, ncol=2)
 
     ax.set_xlabel("Temperature (°C)")
@@ -155,31 +154,15 @@ def equilibrium_constant():
     print(Kp)
 
 
+# @utils.profiler()
+@utils.timer
 def main():
-    start_time = time.perf_counter()
-
     # example_smith_vanness_abbott()
     # example_web_app()
     example_plot()
     # equilibrium_constant()
 
-    run_time = time.perf_counter() - start_time
-    print(run_time)
-
-    # plt.show()
-
 
 if __name__ == "__main__":
-    # import cProfile
-    # import pstats
-    # from pstats import SortKey
-
-    # profiler = cProfile.Profile()
-    # profiler.enable()
-    # main()
-    # profiler.disable()
-
-    # stats = pstats.Stats(profiler)
-    # stats.strip_dirs()
-    # stats.sort_stats(SortKey.TIME).print_stats(30)
     main()
+    plt.show()
