@@ -41,6 +41,9 @@ class Mixture:
                     species.atom_stoic.get(element, 0)
                 )
 
+    def calculate_viscosity(self):
+        Hij = np.zeros((self.num_species, ))
+
     def _set_crit_cons(self) -> None:
         """
         Get the critical constants for the mix as a 2D numpy array.

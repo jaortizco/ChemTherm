@@ -10,6 +10,8 @@ class CriticalConstants:
     """
     Class to handle critical constants data.
 
+    Tc in K, Pc in Pa, and Vc in cm^3 mol^-1.
+
     """
 
     def __init__(self, species_name: str) -> None:
@@ -33,16 +35,11 @@ class CriticalConstants:
         """
         Critical constants.
 
-        Parameters
-        ----------
-        species : list
-            species to get Cp.
-
         Returns
         -------
         crit_cons : list
             Critical constants.
-            Tc in K, Pc in Pa, and Vc in m^3 mol^-1.
+            Tc in K, Pc in Pa, and Vc in cm^3 mol^-1.
 
         Notes
         -----

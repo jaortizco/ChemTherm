@@ -17,22 +17,16 @@ class MolecularWeight:
         """
         self.species_name = species_name
 
-    def load_molecular_weight(self) -> dict:
+    def load_molecular_weight(self) -> float:
         """
-        Critical constants.
-
-        Parameters
-        ----------
-        species : list
-            species to get Cp.
+       Load the molecular weight.
 
         Returns
         -------
-        molecular_weight : list
+        molecular_weight : float
             Molecular weights.
 
         """
-        # Load coefficients database
         dir = pathlib.Path(__file__).resolve().parent
         db_file = pathlib.Path(dir, "data/db_molecular_weight.json")
 

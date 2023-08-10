@@ -154,13 +154,22 @@ def equilibrium_constant():
     print(Kp)
 
 
+def viscosity():
+    species = Species("N2(g)")
+
+    T = 227 + 273.15  # °C -- K
+    print((species.calculate_gas_viscosity(T) - 258)/258*100)
+
+
 # @utils.profiler()
 @utils.timer
 def main():
     # example_smith_vanness_abbott()
     # example_web_app()
-    example_plot()
+    # example_plot()
     # equilibrium_constant()
+
+    viscosity()
 
 
 if __name__ == "__main__":

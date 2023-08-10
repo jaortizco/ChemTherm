@@ -28,11 +28,6 @@ class FormationProperties:
         """
         Load formation properties database.
 
-        Parameters
-        ----------
-        species : list
-            Species to get the formation properties for.
-
         Returns
         -------
         form_props : dict
