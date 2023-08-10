@@ -9,9 +9,11 @@ from chemtherm.elements import Elements
 from chemtherm.formation_properties import FormationProperties
 from chemtherm.formation_reaction import FormationReaction
 from chemtherm.molecular_weight import MolecularWeight
+from chemtherm.dipole_moments import DipoleMoment
 
 
 class Species:
+
     def __init__(self, name: str):
         self.name = name
 
@@ -21,6 +23,7 @@ class Species:
         self.form_rxn = FormationReaction(self.name)
         self.elements = Elements(self.name)
         self.M = MolecularWeight(self.name).load_molecular_weight()
+        self.dipole = DipoleMoment(self.name).load_dipole_moment()
 
     def calculate_atom_stoichiometry(self) -> None:
         """
@@ -42,15 +45,16 @@ class Species:
         """
         atom_stoic = re.findall(
             r'[A-Z][a-z]*|\d+',
-            re.sub(
-                r'[A-Z][a-z]*(?![\da-z])', r'\g<0>1',
-                self.name))
+            re.sub(r'[A-Z][a-z]*(?![\da-z])', r'\g<0>1', self.name)
+        )
 
         self.atom_stoic = utils.list2dict(atom_stoic)
 
     def properties_at_T(
-            self, T: float, Tref: float = 298.15) -> tuple[
-            np.float64, np.float64, np.float64]:
+        self,
+        T: float,
+        Tref: float = 298.15
+    ) -> tuple[np.float64, np.float64, np.float64]:
         """
         Compute the enthalpy, the gibbs energy, and the entropy of a given
         reaction at a specified temperature.
@@ -79,7 +83,8 @@ class Species:
         """
         Hf0, S0 = (np.zeros(len(self.form_rxn.species)) for _ in range(2))
         Cp_coeff = np.zeros(
-            (len(self.form_rxn.species), len(self.cp_coeffs.array)))
+            (len(self.form_rxn.species), len(self.cp_coeffs.array))
+        )
         for i, species in enumerate(self.form_rxn.species):
             Hf0[i] = FormationProperties(species).Hf0
             S0[i] = FormationProperties(species).S0
@@ -88,6 +93,45 @@ class Species:
         nu = np.array(self.form_rxn.nu)
 
         Hrxn, Grxn, Srxn = rxn.reaction_properties(
-            T, Hf0, S0, Cp_coeff, nu, Tref)
+            T, Hf0, S0, Cp_coeff, nu, Tref
+        )
 
         return Hrxn, Grxn, Srxn  # type: ignore
+
+    def calculate_gas_viscosity(self, T: float) -> float:
+        """
+        Calculate the pure gas viscosity using Ching's method.
+
+        Parameters
+        ----------
+        T : float
+            Temperature in K.
+
+        Returns
+        -------
+        eta : float
+            Viscosity in micro Poise (muP).
+
+        Notes
+        -----
+        The method of Chung is used as described in The Properties of Gases
+        and Liquids (5th edition). Poling, B. E., Prausnitz, J. M., &
+        O'Connell, J. P. (2000). Chapter 9.
+
+        """
+        A, B, C, D, E, F = (
+            1.16145, 0.14874, 0.52487, 0.77320, 2.16178, 2.43787
+        )
+
+        T_star = 1.2593*(T/self.crit_cons.Tc)
+
+        # Viscosity collision integral
+        Omega = A*T_star**-B + C*np.exp(-D*T_star) + E*np.exp(-F*T_star)
+
+        # Reduced dipole moment
+        mu_r = 131.3*self.dipole/(self.crit_cons.Vc*self.crit_cons.Tc)**0.5
+
+        # Factor to account for molecular shapes and polarities
+        Fc = 1 - 0.2756*self.crit_cons.w + 0.059035*mu_r**4
+
+        return 40.785*(Fc*(self.M*T)**0.5/(self.crit_cons.Vc**(2/3)*Omega))

@@ -30,7 +30,7 @@ def remove_duplicates(mylist: list) -> list:
     return list(dict.fromkeys(mylist))
 
 
-def list2dict(lst):
+def list2dict(mylist: list):
     """
     Convert a list into a dictionary.
 
@@ -49,9 +49,9 @@ def list2dict(lst):
 
     """
     mydict = {}
-    for index, item in enumerate(lst):
+    for index, item in enumerate(mylist):
         if index % 2 == 0:
-            mydict[item] = lst[index + 1]
+            mydict[item] = mylist[index + 1]
 
     return mydict
 
