@@ -1,3 +1,14 @@
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.yapf]
+COLUMN_LIMIT = 79
+DEDENT_CLOSING_BRACKETS = true
+ARITHMETIC_PRECEDENCE_INDICATION = true
+SPLIT_BEFORE_ARITHMETIC_OPERATOR = true
+NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS = "*,/"

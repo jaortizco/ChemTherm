@@ -13,10 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def especies_properties(
-        mix: Mixture, T: float, Tref: float = 298.15) -> tuple[
-            npt.NDArray[np.float64],
-            npt.NDArray[np.float64],
-            npt.NDArray[np.float64]]:
+    mix: Mixture,
+    T: float,
+    Tref: float = 298.15,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64],
+           npt.NDArray[np.float64]]:
     """
     Calculate the formation enthalpy, Gibbs energy and entropy of each species
     at the specified temperature.
@@ -48,7 +49,10 @@ def especies_properties(
     return Hrxn, Grxn, Srxn
 
 
-def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
+def atom_balance(
+    n: npt.NDArray,
+    mix: Mixture,
+) -> npt.NDArray:
     """
     Calculate the total number of moles of each atom in the mixture.
 
@@ -69,7 +73,13 @@ def atom_balance(n: npt.NDArray, mix: Mixture) -> npt.NDArray:
     return n @ mix.stoic_matrix
 
 
-def activity(T, P, y, crit_cons, P0=1):
+def activity(
+    T,
+    P,
+    y,
+    crit_cons,
+    P0=1,
+):
     """
     Calculate the activity of each species at a given temperature, pressure
     and composition.
@@ -103,14 +113,19 @@ def activity(T, P, y, crit_cons, P0=1):
 
     # Real gas
     phi = peng_robinson(
-        T, P, y, crit_cons[:, 0], crit_cons[:, 1], crit_cons[:, 4])
+        T, P, y, crit_cons[:, 0], crit_cons[:, 1], crit_cons[:, 4]
+    )
 
     return y*phi*P/P0
 
 
 def gibbs_objfun(
-        n: npt.NDArray[np.float64], T: float, P: float,
-        Grxn: npt.NDArray[np.float64], mix: Mixture) -> float:
+    n: npt.NDArray[np.float64],
+    T: float,
+    P: float,
+    Grxn: npt.NDArray[np.float64],
+    mix: Mixture,
+) -> float:
     """
     Objective function for the Gibbs energy minimization.
 
@@ -149,15 +164,18 @@ def gibbs_objfun(
     # are ignored.
     with np.errstate(divide="ignore", invalid="ignore"):
         lna = np.log(a)
-        value = n*(GRT + lna)
+        value = n*(GRT+lna)
 
     return value.sum()
 
 
 def gibbs_minimization(
-        T: float, P: float, n0: npt.NDArray, mix: Mixture,
-        Tref: float = 298.15) -> tuple[
-        npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    T: float,
+    P: float,
+    n0: npt.NDArray,
+    mix: Mixture,
+    Tref: float = 298.15,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """
     Find the number of moles and the mole fractions at the equilibrium state
     of the involved species by minimizing the total Gibbs free energy.
@@ -202,34 +220,41 @@ def gibbs_minimization(
         {
             "type": "ineq",
             "fun": lambda n: n
-        },
-        {
+        }, {
             "type": "eq",
             "fun": (lambda n: atom_moles_init - atom_balance(n, mix))
-        }]
+        }
+    ]
     # -------------------------------------------------------------------------
     n_eq_init = np.copy(n0)
     n_eq_init[n_eq_init == 0] = 1e-12
 
     opts = {"ftol": 1e-14, "maxiter": 300}
     sol = optimize.minimize(
-        gibbs_objfun, n_eq_init,
+        gibbs_objfun,
+        n_eq_init,
         args=(T, P, Grxn, mix),
-        method="SLSQP", options=opts, constraints=contraints)
+        method="SLSQP",
+        options=opts,
+        constraints=contraints
+    )
 
     if not sol.success:
         msg = f"Gibbs minimization failed: {sol.message}"
         logger.warning(msg)
     # -------------------------------------------------------------------------
-    n_eq = sol.x * scaling_factor
+    n_eq = sol.x*scaling_factor
     y_eq = n_eq/np.sum(n_eq)
     # -------------------------------------------------------------------------
     return n_eq, y_eq
 
 
 def eq_cons(
-        mix: Mixture, nu: npt.NDArray[np.int32], T: float,
-        Tref: float = 298.15) -> tuple[float, float, float, float]:
+    mix: Mixture,
+    nu: npt.NDArray[np.int32],
+    T: float,
+    Tref: float = 298.15,
+) -> tuple[float, float, float, float]:
     """
     Compute the enthalpy, the gibbs energy, the entropy, and the equilibrium
     constant of a given reaction at a specified temperature.
@@ -260,9 +285,9 @@ def eq_cons(
     """
 
     Hrxn, Grxn, Srxn = rxn.reaction_properties(
-        T, mix.form_props[:, 0], mix.form_props[:, 2], mix.cp_coeffs, nu,
-        Tref)
+        T, mix.form_props[:, 0], mix.form_props[:, 2], mix.cp_coeffs, nu, Tref
+    )
 
-    Kp = np.exp(-Grxn / (pc.R*T))
+    Kp = np.exp(-Grxn/(pc.R*T))
 
     return Kp, Hrxn, Grxn, Srxn

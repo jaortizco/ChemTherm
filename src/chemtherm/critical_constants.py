@@ -11,6 +11,7 @@ class CriticalConstants:
     Class to handle critical constants data.
 
     """
+
     def __init__(self, species_name: str) -> None:
         """
         Get the critial constants for the specified species.
