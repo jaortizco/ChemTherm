@@ -9,6 +9,7 @@ class Elements:
     Class to handle elements data.
 
     """
+
     def __init__(self, species_name: str) -> None:
         """
         Get the elements that make up the specified species.

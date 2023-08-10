@@ -31,13 +31,15 @@ def heat_capacity(T: float, coeff: npt.NDArray[np.float64]) -> float:
 
     """
     return (
-        coeff[0] + coeff[1]*T + coeff[2]*T**2
-        + coeff[3]*T**3 + coeff[4]*T**4)
+        coeff[0] + coeff[1]*T + coeff[2]*T**2 + coeff[3]*T**3 + coeff[4]*T**4
+    )
 
 
 def enthalpy_integral(
-        T: float, Cp_coeff: npt.NDArray,
-        Tref: float = 298.15) -> float:
+    T: float,
+    Cp_coeff: npt.NDArray,
+    Tref: float = 298.15,
+) -> float:
     """
     Evaluate the enthalpy of reaction at a given temperature.
 
@@ -62,6 +64,7 @@ def enthalpy_integral(
         Enthalpy of reaction at the given temperature in J mol^-1.
 
     """
+
     def integral(T, Cp_coeff):
         return heat_capacity(T, Cp_coeff)
 
@@ -69,8 +72,10 @@ def enthalpy_integral(
 
 
 def entropy_integral(
-        T: float, Cp_coeff: npt.NDArray,
-        Tref: float = 298.15) -> float:
+    T: float,
+    Cp_coeff: npt.NDArray,
+    Tref: float = 298.15,
+) -> float:
     """
     Evaluate the entropy of reaction at a given temperature.
 
@@ -95,6 +100,7 @@ def entropy_integral(
         Entropy of reaction at the given temperature in J mol^-1 K^-1.
 
     """
+
     def integral(T, Cp_coeff):
         return heat_capacity(T, Cp_coeff)/T
 
@@ -102,9 +108,13 @@ def entropy_integral(
 
 
 def reaction_properties(
-        T: float, Hf0: npt.NDArray[np.float64], S0: npt.NDArray[np.float64],
-        Cp_coeff: npt.NDArray[np.float64], nu: npt.NDArray[np.int32],
-        Tref: float = 298.15) -> tuple[float, float, float]:
+    T: float,
+    Hf0: npt.NDArray[np.float64],
+    S0: npt.NDArray[np.float64],
+    Cp_coeff: npt.NDArray[np.float64],
+    nu: npt.NDArray[np.int32],
+    Tref: float = 298.15,
+) -> tuple[float, float, float]:
     """
     Compute the enthalpy, the gibbs energy, and the entropy of a given
     reaction at a specified temperature.
@@ -137,9 +147,9 @@ def reaction_properties(
 
     """
 
-    Hrxn0 = nu@Hf0
-    Srxn0 = nu@S0
-    Cprxn_coeff = nu@Cp_coeff
+    Hrxn0 = nu @ Hf0
+    Srxn0 = nu @ S0
+    Cprxn_coeff = nu @ Cp_coeff
 
     Hrxn = Hrxn0 + enthalpy_integral(T, Cprxn_coeff, Tref)
     Srxn = Srxn0 + entropy_integral(T, Cprxn_coeff, Tref)

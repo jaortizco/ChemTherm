@@ -7,6 +7,7 @@ class FormationReaction:
     Class to handle formation reaction data.
 
     """
+
     def __init__(self, species_name: str):
         """
         Get the formation reactions for the specified species.

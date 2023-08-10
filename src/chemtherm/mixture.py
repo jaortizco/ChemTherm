@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Mixture:
+
     def __init__(self, species_list: list[Species]) -> None:
         self.species_list = species_list
         self.num_species = len(species_list)
@@ -37,7 +38,8 @@ class Mixture:
             species.calculate_atom_stoichiometry()
             for j, element in enumerate(self.elements):
                 self.stoic_matrix[i, j] = float(
-                    species.atom_stoic.get(element, 0))
+                    species.atom_stoic.get(element, 0)
+                )
 
     def _set_crit_cons(self) -> None:
         """
@@ -54,8 +56,7 @@ class Mixture:
         Get the cp coefficients for the mix as a 2D numpy array.
 
         """
-        self.cp_coeffs = np.zeros(
-            (len(self.species_list), 5))
+        self.cp_coeffs = np.zeros((len(self.species_list), 5))
 
         for i, species in enumerate(self.species_list):
             self.cp_coeffs[i, :] = species.cp_coeffs.array
@@ -65,8 +66,7 @@ class Mixture:
         Get the formation properties for the mix as a 2D numpy array.
 
         """
-        self.form_props = np.zeros(
-            (len(self.species_list), 4))
+        self.form_props = np.zeros((len(self.species_list), 4))
 
         for i, species in enumerate(self.species_list):
             self.form_props[i, :] = species.form_props.array

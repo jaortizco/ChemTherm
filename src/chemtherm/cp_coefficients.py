@@ -9,6 +9,7 @@ class CpCoefficients:
     Class to handle Cp coefficient data.
 
     """
+
     def __init__(self, species_name: str) -> None:
         """
         Get the Cp coefficients for the specified species.
