@@ -39,7 +39,7 @@ class CriticalConstants:
         -------
         crit_cons : list
             Critical constants.
-            Tc in K, Pc in Pa, and Vc in cm^3 mol^-1.
+            Tc in K, Pc in MPa, and Vc in m^3 kmol^-1.
 
         Notes
         -----
