@@ -40,7 +40,7 @@ class DipoleMoment:
         are listed by molecular formula in Hill order; compounds not
         containing carbon are listed first, followed by compounds containing
         carbon. The dipole moment μ is given in debye units (D). The
-        conversion factor to SI units is 1 D = 3.33564e-30 C m. 
+        conversion factor to SI units is 1 D = 3.33564e-30 C m.
 
         """
         dir = pathlib.Path(__file__).resolve().parent

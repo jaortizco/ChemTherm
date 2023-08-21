@@ -39,6 +39,13 @@ class CpCoefficients:
         dict
             Cp data.
 
+        Notes
+        -----
+        The heat capacity coeeficients are taken from Table 2-1 of
+        Yaws, C. L. (2001). Chemical Properties Handbook: Physical,
+        Thermodynamic, Environmental, Transport, Safety, and Health Related
+        Properties for Organic and Inorganic Chemicals. McGraw-Hill.
+
         """
         # Load Cp coefficients database
         dir = pathlib.Path(__file__).resolve().parent

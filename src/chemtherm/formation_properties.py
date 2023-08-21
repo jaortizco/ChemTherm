@@ -36,7 +36,7 @@ class FormationProperties:
 
         Notes
         -----
-        The formation properties are taken from Table 2-179 of Perry's
+        - The formation properties are taken from Table 2-179 of Perry's
         Chemical Engineering Handbook, 8th Edition. At the same time,
         values in that table were taken from the Design Institute for Physical
         Properties (DIPPR) of the American Institute of Chemical Engineers
@@ -46,6 +46,11 @@ class FormationProperties:
         W. V. Wilding, J. L. Oscarson, Y. Yang, N. A. Zundel, T. E. Daubert,
         R. P. Danner, DIPPR® Data Compilation of Pure Chemical Properties,
         Design Institute for Physical Properties, AIChE, New York (2007).
+
+        - For CH2ClF2, the formation properties are taken from the "Standard
+        Thermodynamic Properties of Chemical Substances" table in
+        Section 5, 5-4 of the CRC Handbook of Chemistry and Physics
+        (84th edition). Lide, D. R. (2003)
 
         """
         # Load coefficients database

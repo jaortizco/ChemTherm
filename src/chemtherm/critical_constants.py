@@ -31,7 +31,7 @@ class CriticalConstants:
 
         self.array = np.array([self.Tc, self.Pc, self.Vc, self.Zc, self.w])
 
-    def _load_critical_constants(self) -> dict:
+    def _load_critical_constants(self) -> dict[str, dict[str, float]]:
         """
         Critical constants.
 
@@ -43,7 +43,7 @@ class CriticalConstants:
 
         Notes
         -----
-        The critical constants are taken from Table 2-141 of Perry's Chemical
+        - The critical constants are taken from Table 2-141 of Perry's Chemical
         Engineering Handbook, 8th Edition. At the same time, values in that
         table were taken from the Design Institute for Physical Properties
         (DIPPR) of the American Institute of Chemical Engineers (AIChE),
@@ -53,12 +53,17 @@ class CriticalConstants:
         J. L. Oscarson, Y. Yang, N. A. Zundel, T. E. Daubert, R. P. Danner,
         DIPPR® Data Compilation of Pure Chemical Properties, Design Institute
         for Physical Properties, AIChE, New York (2007).
-
         The number of digits provided for the acentric factor was chosen for
         uniformity of appearence and formatting; these do not represent the
         uncertainties of the physical quantities, but are the result of
         calculations from the standard thermophysical property formulation
         within a fixed format.
+
+        - For CH2ClF2, the critical constants were taken from Table 1-1 of
+        Yaws, C. L. (2001). Chemical Properties Handbook: Physical,
+        Thermodynamic, Environmental, Transport, Safety, and Health Related
+        Properties for Organic and Inorganic Chemicals. McGraw-Hill.
+
 
         """
         # Load coefficients database

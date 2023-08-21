@@ -152,11 +152,66 @@ def equilibrium_constant():
     print(Kp)
 
 
-def viscosity():
+def viscosity_pure_substance():
+    """
+    Example prediction of the viscosity of molecular nitrogen at 227°C.
+
+    Chung's method is used.
+
+    Notes
+    -----
+    Experimental data taken from Table 9-2 of The Properties of Gases and
+    Liquids (5th edition). McGraw-Hill Professional Pub.  Poling, B. E.,
+    Prausnitz, J. M., & O'Connell, J. P. (2000).
+
+    """
+    T = 227 + 273.15  # °C --> K
+    exp_value = 258
+
     species = Species("N2(g)")
 
-    T = 227 + 273.15  # °C -- K
-    print((species.calculate_gas_viscosity(T) - 258)/258*100)
+    calc_value = species.calculate_gas_viscosity(T)
+    error = (calc_value-exp_value)/exp_value*100
+
+    print("Viscosity calculation for molecular nitrogen")
+    print("Calculated    Experimental    Difference (%)")
+    print(f"{calc_value:.3f}       {exp_value:.3f}         {error:.3f}")
+    print()
+
+
+def viscosity_mixture():
+    """
+    Example prediction of the viscosity of a nitrogen-hydrogen mixture
+    at 100°C.
+
+    Reichenberg's method is used.
+
+    Notes
+    -----
+    Experimental data taken from Table 9-4 of The  roperties of Gases and
+    Liquids (5th edition). McGraw-Hill Professional Pub.  Poling, B. E.,
+    Prausnitz, J. M., & O'Connell, J. P. (2000).
+
+    """
+    T = 100 + 273.15  # °C --> K
+    y1 = 0.51
+    exp_value = 190.3
+
+    species_names = ["N2(g)", "H2(g)"]
+
+    species_list = []
+    for name in species_names:
+        species_list.append(Species(name))
+
+    mix = Mixture(species_list)
+
+    calc_value = mix.calculate_viscosity(T, np.array([y1, 1 - y1]))
+    error = (calc_value-exp_value)/exp_value*100
+
+    print("Viscosity calculation for a nitrogen-hydrogen mixture")
+    print("Calculated    Experimental    Difference (%)")
+    print(f"{calc_value:.3f}       {exp_value:.3f}         {error:.3f}")
+    print()
 
 
 # @utils.profiler()
@@ -167,7 +222,8 @@ def main():
     # example_plot()
     # equilibrium_constant()
 
-    viscosity()
+    # viscosity_pure_substance()
+    viscosity_mixture()
 
 
 if __name__ == "__main__":
