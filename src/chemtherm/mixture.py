@@ -205,7 +205,7 @@ class Mixture:
             Reduced temperature.
         mu_r : array_like
             Dimensionless dipole moment.
-        
+
         Returns
         -------
         FR : array_like
@@ -228,7 +228,7 @@ class Mixture:
             Reduced temperature.
         FR : array_like
             Polar correction factor.
-        
+
         Returns
         -------
         Ui : array_like
