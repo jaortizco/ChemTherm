@@ -5,11 +5,11 @@ import numpy as np
 from chemtherm import rxn, utils
 from chemtherm.cp_coefficients import CpCoefficients
 from chemtherm.critical_constants import CriticalConstants
+from chemtherm.dipole_moments import DipoleMoment
 from chemtherm.elements import Elements
 from chemtherm.formation_properties import FormationProperties
 from chemtherm.formation_reaction import FormationReaction
 from chemtherm.molecular_weight import MolecularWeight
-from chemtherm.dipole_moments import DipoleMoment
 
 
 class Species:
