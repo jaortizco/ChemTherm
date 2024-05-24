@@ -107,6 +107,55 @@ def entropy_integral(
     return integrate.quad(integral, Tref, T, args=(Cp_coeff))[0]
 
 
+def thermodynamic_properties(
+    T: float,
+    Hf0: npt.NDArray[np.float64],
+    S0: npt.NDArray[np.float64],
+    Cp_coeff: npt.NDArray[np.float64],
+    Tref: float = 298.15,
+) -> tuple[float, float, float]:
+    """
+    Compute the enthalpy, the gibbs energy, and the entropy of a given
+    reaction at a specified temperature.
+
+    Parameters
+    ----------
+    T : float
+        Temperature in K.
+    Hf0 : array_like
+        Standard enthalpy of formation of each species in J mol^-1.
+    S0 : array_like
+        Standard entropy of each species in J mol^-1 K^-1.
+    Cp_coeff : array_like
+        Matrix of heat capacity coefficients.
+        Rows: represent different species.
+        Columns: A, B, C, D, E.
+    nu : array
+        Stoichiometry coefficients of each especies.
+    Tref : float, optional
+        Reference temperature in K.
+
+    Returns
+    -------
+    dH : float
+        Enthalpy of reaction at the given temperature in J mol^-1.
+    dG : float
+        Gibbs free energy of reaction at the given temperature in J mol^-1.
+    dS : float
+        Entropy of reaction at the given temperature in J mol^-1 K^-1.
+
+    """
+    dH_int = enthalpy_integral(T, Cp_coeff, Tref)
+    dS_int = entropy_integral(T, Cp_coeff, Tref)
+
+    dH = Hf0 + dH_int
+    dS = S0 + dS_int
+
+    dG = dH - T*dS
+
+    return dH, dG, dS  # type: ignore
+
+
 def reaction_properties(
     T: float,
     Hf0: npt.NDArray[np.float64],
@@ -146,13 +195,16 @@ def reaction_properties(
         Entropy of reaction at the given temperature in J mol^-1 K^-1.
 
     """
-
     Hrxn0 = nu @ Hf0
     Srxn0 = nu @ S0
     Cprxn_coeff = nu @ Cp_coeff
 
-    Hrxn = Hrxn0 + enthalpy_integral(T, Cprxn_coeff, Tref)
-    Srxn = Srxn0 + entropy_integral(T, Cprxn_coeff, Tref)
+    dH_int = enthalpy_integral(T, Cprxn_coeff, Tref)
+    dS_int = entropy_integral(T, Cprxn_coeff, Tref)
+
+    Hrxn = Hrxn0 + dH_int
+    Srxn = Srxn0 + dS_int
+
     Grxn = Hrxn - T*Srxn
 
     return Hrxn, Grxn, Srxn  # type: ignore
