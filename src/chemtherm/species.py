@@ -1,8 +1,10 @@
 import re
 
 import numpy as np
+import numpy.typing as npt
 
-from chemtherm import rxn, utils
+from chemtherm import thermoprops as thp
+from chemtherm import utils
 from chemtherm.cp_coefficients import CpCoefficients
 from chemtherm.critical_constants import CriticalConstants
 from chemtherm.dipole_moments import DipoleMoment
@@ -50,7 +52,7 @@ class Species:
 
         self.atom_stoic = utils.list2dict(atom_stoic)
 
-    def properties_at_T(
+    def reaction_properties(
         self,
         T: float,
         Tref: float = 298.15
@@ -92,11 +94,25 @@ class Species:
 
         nu = np.array(self.form_rxn.nu)
 
-        Hrxn, Grxn, Srxn = rxn.reaction_properties(
-            T, Hf0, S0, Cp_coeff, nu, Tref
+        Hrxn, Grxn, Srxn = thp.reaction_properties(
+            T, Hf0, S0, Cp_coeff, nu, Tref=Tref
         )
 
         return Hrxn, Grxn, Srxn  # type: ignore
+
+    def thermodynamic_properties(
+        self,
+        T: float,
+        Tref: float = 298.15,
+    ) -> npt.NDArray[np.float64]:
+
+        return thp.thermodynamic_properties(
+            T,
+            self.form_props.Hf0,
+            self.form_props.S0,
+            self.cp_coeffs.array,
+            Tref=Tref
+        )  # type: ignore
 
     def calculate_gas_viscosity(self, T: float) -> float:
         """

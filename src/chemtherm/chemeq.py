@@ -5,7 +5,7 @@ import numpy.typing as npt
 from scipy import optimize
 
 from chemtherm import phycons as pc
-from chemtherm import rxn
+from chemtherm import thermoprops
 from chemtherm.mixture import Mixture
 from chemtherm.peng_robinson import peng_robinson
 
@@ -44,7 +44,7 @@ def especies_properties(
     """
     Hrxn, Grxn, Srxn = (np.zeros(mix.num_species) for _ in range(3))
     for i, species in enumerate(mix.species_list):
-        Hrxn[i], Grxn[i], Srxn[i] = species.properties_at_T(T, Tref)
+        Hrxn[i], Grxn[i], Srxn[i] = species.reaction_properties(T, Tref)
 
     return Hrxn, Grxn, Srxn
 
@@ -284,7 +284,7 @@ def eq_cons(
 
     """
 
-    Hrxn, Grxn, Srxn = rxn.reaction_properties(
+    Hrxn, Grxn, Srxn = thermoprops.reaction_properties(
         T, mix.form_props[:, 0], mix.form_props[:, 2], mix.cp_coeffs, nu, Tref
     )
 

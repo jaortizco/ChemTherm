@@ -29,7 +29,7 @@ def example_smith_vanness_abbott():
 
     """
     P = 1  # bar
-    T = 1000  # °C --> K
+    T = 1000  # K
     # -------------------------------------------------------------------------
     species_names = ["CH4(g)", "H2O(g)", "CO(g)", "H2(g)", "CO2(g)"]
 
@@ -214,6 +214,24 @@ def viscosity_mixture():
     print()
 
 
+def chemical_potential():
+    # P = 1  # bar
+    T = np.linspace(100, 1200, 100) + 273.15  # °C --> K
+    # -------------------------------------------------------------------------
+    species = Species("CH4(g)")
+
+    mu = np.zeros(T.size)
+    for i, Ti in enumerate(T):
+        _, mu[i], _ = species.thermodynamic_properties(Ti)
+    # -------------------------------------------------------------------------
+    fig, ax = plt.subplots(constrained_layout=True)
+
+    ax.plot(T - 273.15, mu*1e-3)
+
+    ax.set_xlabel("Temperature (°C)")
+    ax.set_ylabel(r"Chemical potential ($\mathrm{kJ \,\, mol^{-1}}$)")
+
+
 # @utils.profiler()
 @utils.timer
 def main():
@@ -223,7 +241,9 @@ def main():
     # equilibrium_constant()
 
     # viscosity_pure_substance()
-    viscosity_mixture()
+    # viscosity_mixture()
+
+    chemical_potential()
 
 
 if __name__ == "__main__":
