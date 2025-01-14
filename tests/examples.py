@@ -188,7 +188,7 @@ def viscosity_mixture():
 
     Notes
     -----
-    Experimental data taken from Table 9-4 of The  roperties of Gases and
+    Experimental data taken from Table 9-4 of The Properties of Gases and
     Liquids (5th edition). McGraw-Hill Professional Pub.  Poling, B. E.,
     Prausnitz, J. M., & O'Connell, J. P. (2000).
 
