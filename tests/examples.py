@@ -232,6 +232,56 @@ def chemical_potential():
     ax.set_ylabel(r"Chemical potential ($\mathrm{kJ \,\, mol^{-1}}$)")
 
 
+def ammonia_equilibrium():
+    """
+    Calculation of ammonia equilibrium as function of temperature at a
+    specific pressure.
+
+    Comparison with the following paper:
+    Ristig, S. et al. Ammonia Decomposition in the Process Chain for a
+    Renewable Hydrogen Supply. Chem. Ing. Tech. 94, 1413–1425 (2022).
+
+    """
+    P = 100  # bar
+    T = np.linspace(200, 800, 100) + 273.15  # °C --> K
+    # -------------------------------------------------------------------------
+    species_names = ["H2(g)", "N2(g)", "NH3(g)"]
+
+    species_list = []
+    for name in species_names:
+        species_list.append(Species(name))
+
+    mix = Mixture(species_list)
+    # -------------------------------------------------------------------------
+    n0 = np.array([0, 0, 1])
+    # -------------------------------------------------------------------------
+    n_eq, y_eq = (np.zeros((T.size, n0.size)) for _ in range(2))
+    for i, Ti in enumerate(T):
+        n_eq[i, :], y_eq[i, :] = chemeq.gibbs_minimization(Ti, P, n0, mix)
+    # -------------------------------------------------------------------------
+    _, ax = plt.subplots(constrained_layout=True)
+
+    ax.plot(T - 273.15, y_eq)
+    ax.legend(species_names, frameon=False, loc="best")
+
+    ax.set_xlabel("Temperature (°C)")
+    ax.set_ylabel(r"Mole fraction ($-$)")
+    # -------------------------------------------------------------------------
+    _, ax = plt.subplots(constrained_layout=True)
+
+    ax.semilogy(T - 273.15, y_eq[:, 2])
+    ax.axhline(y=0.01, linestyle='--', color="k")
+
+    ax.set_xlabel("Temperature (°C)")
+    ax.set_ylabel(r"Mole fraction ($-$)")
+
+    import matplotlib.ticker as ticker
+    for axis in [ax.xaxis, ax.yaxis]:
+        axis.set_major_formatter(
+            ticker.FuncFormatter(lambda y, _: '{:g}'.format(y))
+        )
+
+
 # @utils.profiler()
 @utils.timer
 def main():
@@ -243,7 +293,8 @@ def main():
     # viscosity_pure_substance()
     # viscosity_mixture()
 
-    chemical_potential()
+    # chemical_potential()
+    ammonia_equilibrium()
 
 
 if __name__ == "__main__":
