@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chemtherm"
-version = "0.9.4"
+dynamic = ["version"]
 authors = [{ name = "jaortizco", email = "jaortizco@gmail.com" }]
 description = "Offer a set of thermodynamic functions"
 readme = "README.md"
@@ -23,6 +23,9 @@ bug-tracker = "https://github.com/jaortizco/ChemTherm/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "chemtherm.__version__" }
 
 [tool.isort]
 multi_line_output = 3
