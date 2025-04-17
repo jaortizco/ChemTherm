@@ -242,7 +242,7 @@ def ammonia_equilibrium():
     Renewable Hydrogen Supply. Chem. Ing. Tech. 94, 1413–1425 (2022).
 
     """
-    P = 100  # bar
+    P = 1  # bar
     T = np.linspace(200, 800, 100) + 273.15  # °C --> K
     # -------------------------------------------------------------------------
     species_names = ["H2(g)", "N2(g)", "NH3(g)"]
